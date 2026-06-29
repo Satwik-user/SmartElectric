@@ -1,0 +1,20 @@
+[Unit]
+Description=SmartElectric Streamlit Dashboard Service
+After=network.target smartelectric-api.service
+Wants=smartelectric-api.service
+
+[Service]
+Type=simple
+User=jetson
+WorkingDirectory=/home/jetson/smartelectric/edge/frontend
+Environment=PYTHONUNBUFFERED=1
+# Running streamlit through python -m ensures the active python environment is utilized
+ExecStart=/usr/bin/python3 -m streamlit run app.py --server.port 8501 --server.address 0.0.0.0 --server.headless true
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=smartelectric-dashboard
+
+[Install]
+WantedBy=multi-user.target

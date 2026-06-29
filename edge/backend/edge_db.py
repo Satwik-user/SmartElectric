@@ -1,0 +1,103 @@
+import sqlite3
+import os
+import sys
+
+# absolute database path (consistent across worker, backend API, and dashboard)
+DB_PATH = "/home/jetson/smartelectric/edge/backend/edge_iot.db"
+
+def get_db_connection():
+    """Establishes and returns a connection to the SQLite database."""
+    global DB_PATH
+    # Ensure directory exists before connecting
+    db_dir = os.path.dirname(DB_PATH)
+    if db_dir and not os.path.exists(db_dir):
+        try:
+            os.makedirs(db_dir, exist_ok=True)
+        except Exception as e:
+            # Fallback to local directory if permission denied on Jetson path during development/testing
+            print(f"Warning: Could not create directory {db_dir} ({e}). Falling back to local directory.", file=sys.stderr)
+            fallback_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "edge_iot.db")
+            DB_PATH = fallback_path
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    # Enable foreign keys
+    conn.execute("PRAGMA foreign_keys = ON;")
+    return conn
+
+def init_db():
+    """Initializes the database schema and inserts seed data for appliances."""
+    print(f"Initializing database at: {DB_PATH}")
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Create appliances table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS appliances (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT UNIQUE NOT NULL,
+        relay_pin INTEGER UNIQUE NOT NULL,
+        status INTEGER NOT NULL CHECK (status IN (0, 1)) DEFAULT 0,
+        last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    """)
+
+    # Create sensor telemetry table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS sensor_data (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        appliance_name TEXT NOT NULL,
+        current REAL NOT NULL, -- Amps (A)
+        power REAL NOT NULL,   -- Watts (W)
+        voltage REAL NOT NULL, -- Volts (V)
+        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        synced INTEGER NOT NULL CHECK (synced IN (0, 1)) DEFAULT 0,
+        FOREIGN KEY (appliance_name) REFERENCES appliances(name) ON DELETE CASCADE
+    );
+    """)
+
+    # Create DHT sensor data table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS dht_data (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        temperature REAL NOT NULL, -- Celsius
+        humidity REAL NOT NULL,    -- Percentage (%)
+        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        synced INTEGER NOT NULL CHECK (synced IN (0, 1)) DEFAULT 0
+    );
+    """)
+
+    # Create system logs table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS system_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        level TEXT NOT NULL,
+        message TEXT NOT NULL,
+        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    """)
+
+    # Seed data for appliances
+    # GPIO pin mappings: Light (18), TV (19), Fridge (21), Fan (22)
+    appliances_seed = [
+        ("Light", 18),
+        ("TV", 19),
+        ("Fridge", 21),
+        ("Fan", 22)
+    ]
+
+    for name, pin in appliances_seed:
+        try:
+            cursor.execute(
+                "INSERT OR IGNORE INTO appliances (name, relay_pin, status) VALUES (?, ?, 0)",
+                (name, pin)
+            )
+        except sqlite3.Error as e:
+            print(f"Failed to seed appliance {name}: {e}")
+
+    conn.commit()
+    conn.close()
+    print("Database initialization completed successfully.")
+
+if __name__ == "__main__":
+    init_db()
