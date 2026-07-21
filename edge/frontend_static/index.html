@@ -7,29 +7,29 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- ApexCharts JS -->
-    <script href="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <style>
         :root {
-            --bg-color: #0b0f19;
-            --card-bg: rgba(30, 41, 59, 0.4);
-            --card-border: rgba(255, 255, 255, 0.05);
-            --text-primary: #cbd5e1;
-            --text-secondary: #64748b;
-            --text-white: #ffffff;
-            --accent-color: #818cf8;
-            --accent-glow: rgba(129, 140, 248, 0.3);
-            --emerald: #34d399;
-            --emerald-glow: rgba(52, 211, 153, 0.2);
-            --rose: #f87171;
-            --rose-glow: rgba(248, 113, 113, 0.2);
-            --amber: #fbbf24;
-            --amber-glow: rgba(251, 191, 36, 0.2);
-            --glass-blur: blur(12px);
+            --bg-color: #080b11; /* Sleek deep navy-slate */
+            --canvas-bg: #0d111a; 
+            --card-bg: rgba(20, 26, 38, 0.6); /* Translucent glass card */
+            --card-active: rgba(59, 130, 246, 0.08); 
+            --card-border: rgba(255, 255, 255, 0.06); 
+            --text-primary: #cbd5e1; /* Slate 300 */
+            --text-secondary: #64748b; /* Slate 500 */
+            --text-white: #f8fafc; /* Slate 50 */
+            --accent-color: #3b82f6; /* Electric Blue */
+            --accent-glow: rgba(59, 130, 246, 0.15);
+            --emerald: #10b981; /* Solar Emerald */
+            --emerald-glow: rgba(16, 185, 129, 0.15);
+            --rose: #f43f5e; /* Red Alert */
+            --rose-glow: rgba(244, 63, 94, 0.2);
+            --amber: #f59e0b; /* Amber warning */
+            --glass-blur: blur(20px);
         }
 
         * {
@@ -45,42 +45,39 @@
             color: var(--text-primary);
             min-height: 100vh;
             display: flex;
-            flex-direction: column;
-            overflow-x: hidden;
+            overflow: hidden;
             background-image: 
-                radial-gradient(at 0% 0%, rgba(129, 140, 248, 0.08) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(52, 211, 153, 0.05) 0px, transparent 50%);
+                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.04) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.02) 0px, transparent 50%);
         }
 
         /* Container Layout */
         .app-container {
             display: flex;
-            flex: 1;
             width: 100%;
-            max-width: 1600px;
-            margin: 0 auto;
-            position: relative;
+            height: 100vh;
+            overflow: hidden;
         }
 
         /* Sidebar Styling */
         sidebar {
             width: 280px;
-            background: rgba(15, 23, 42, 0.6);
+            background: rgba(13, 17, 26, 0.8);
             backdrop-filter: var(--glass-blur);
             border-right: 1px solid var(--card-border);
-            padding: 24px;
+            padding: 36px 24px;
             display: flex;
             flex-direction: column;
-            gap: 32px;
+            gap: 36px;
             height: 100vh;
-            position: sticky;
-            top: 0;
+            flex-shrink: 0;
         }
 
         .logo-section {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
+            padding-left: 8px;
         }
 
         .logo-icon {
@@ -91,17 +88,18 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--bg-color);
-            font-size: 20px;
-            box-shadow: 0 4px 20px var(--accent-glow);
+            color: #080b11;
+            font-size: 18px;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.25);
         }
 
         .logo-text h1 {
             font-family: 'Outfit', sans-serif;
-            font-size: 20px;
-            font-weight: 900;
+            font-size: 21px;
+            font-weight: 700;
             color: var(--text-white);
-            letter-spacing: 0.5px;
+            letter-spacing: -0.5px;
+            line-height: 1.1;
         }
 
         .logo-text span {
@@ -111,13 +109,13 @@
             color: var(--accent-color);
             font-weight: 700;
             display: block;
-            margin-top: -2px;
+            margin-top: 2px;
         }
 
         .nav-links {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
             list-style: none;
         }
 
@@ -125,18 +123,17 @@
             display: flex;
             align-items: center;
             gap: 14px;
-            padding: 14px 16px;
-            border-radius: 12px;
+            padding: 12px 16px;
+            border-radius: 10px;
             color: var(--text-secondary);
-            font-size: 14px;
+            font-size: 14.5px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid transparent;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .nav-item i {
-            font-size: 18px;
+            font-size: 16px;
             width: 20px;
             text-align: center;
         }
@@ -148,9 +145,8 @@
 
         .nav-item.active {
             color: var(--text-white);
-            background: rgba(129, 140, 248, 0.1);
-            border-color: rgba(129, 140, 248, 0.2);
-            box-shadow: inset 0 0 12px rgba(129, 140, 248, 0.05);
+            background: rgba(59, 130, 246, 0.08);
+            box-shadow: inset 0 0 10px rgba(59, 130, 246, 0.03);
         }
 
         .nav-item.active i {
@@ -161,14 +157,30 @@
             margin-top: auto;
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 20px;
+        }
+
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255,255,255,0.01);
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+        }
+
+        .toggle-row-label {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--text-primary);
         }
 
         .api-input-box {
-            background: rgba(15, 23, 42, 0.8);
+            background: rgba(0,0,0,0.15);
             border: 1px solid var(--card-border);
             border-radius: 12px;
-            padding: 12px;
+            padding: 14px;
         }
 
         .api-input-box label {
@@ -186,11 +198,12 @@
             background: rgba(0, 0, 0, 0.2);
             border: 1px solid var(--card-border);
             border-radius: 8px;
-            padding: 8px 10px;
+            padding: 10px 12px;
             color: var(--text-white);
-            font-size: 12px;
+            font-size: 12.5px;
             outline: none;
-            transition: all 0.3s;
+            transition: all 0.2s;
+            font-family: 'JetBrains Mono', monospace;
         }
 
         .api-input-box input:focus {
@@ -200,11 +213,26 @@
         /* Main Content Panel */
         main {
             flex: 1;
+            background-color: var(--canvas-bg);
             padding: 40px;
             display: flex;
             flex-direction: column;
             gap: 32px;
-            min-width: 0; /* Prevents flex items from breaking layout */
+            min-width: 0;
+            overflow-y: auto;
+            height: 100vh;
+        }
+
+        /* Custom Scrollbar */
+        main::-webkit-scrollbar {
+            width: 6px;
+        }
+        main::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        main::-webkit-scrollbar-thumb {
+            background: var(--card-border);
+            border-radius: 10px;
         }
 
         /* Header block */
@@ -219,6 +247,7 @@
             font-size: 28px;
             font-weight: 800;
             color: var(--text-white);
+            letter-spacing: -0.5px;
         }
 
         .header-title p {
@@ -228,21 +257,22 @@
         }
 
         .status-badge {
-            background: rgba(52, 211, 153, 0.1);
-            border: 1px solid rgba(52, 211, 153, 0.2);
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.2);
             color: var(--emerald);
             padding: 8px 16px;
-            border-radius: 50px;
+            border-radius: 8px;
             font-size: 12px;
             font-weight: 700;
             display: flex;
             align-items: center;
             gap: 8px;
+            letter-spacing: 0.5px;
         }
 
         .status-badge.offline {
-            background: rgba(248, 113, 113, 0.1);
-            border: 1px solid rgba(248, 113, 113, 0.2);
+            background: rgba(244, 63, 94, 0.08);
+            border: 1px solid rgba(244, 63, 94, 0.2);
             color: var(--rose);
         }
 
@@ -251,7 +281,17 @@
             height: 8px;
             border-radius: 50%;
             background-color: currentColor;
-            box-shadow: 0 0 10px currentColor;
+            box-shadow: 0 0 8px currentColor;
+        }
+
+        .status-badge.online .dot {
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+            70% { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
         }
 
         /* Tab Views */
@@ -259,7 +299,7 @@
             display: none;
             flex-direction: column;
             gap: 32px;
-            animation: fadeIn 0.4s ease-out forwards;
+            animation: fadeIn 0.25s ease-out forwards;
         }
 
         .tab-view.active {
@@ -267,7 +307,7 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
@@ -280,17 +320,151 @@
             padding: 24px;
             position: relative;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            transition: border-color 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .glass-card:hover {
-            border-color: rgba(129, 140, 248, 0.15);
+            border-color: rgba(255, 255, 255, 0.12);
         }
 
-        /* KPIs layout */
+        /* Ambient alert banners */
+        .system-banner {
+            display: flex;
+            padding: 16px 20px;
+            border-radius: 12px;
+            align-items: center;
+            gap: 16px;
+            font-size: 13.5px;
+        }
+
+        .system-banner.solar {
+            background-color: rgba(16, 185, 129, 0.08);
+            border: 1px solid var(--emerald);
+            color: #a7f3d0;
+        }
+        .system-banner.grid {
+            background-color: rgba(59, 130, 246, 0.08);
+            border: 1px solid var(--accent-color);
+            color: #bfdbfe;
+        }
+        .system-banner.warning {
+            background-color: rgba(244, 63, 94, 0.08);
+            border: 1px solid var(--rose);
+            color: #ffe4e6;
+        }
+
+        .system-banner-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .system-banner.solar .system-banner-icon { color: var(--emerald); }
+        .system-banner.warning .system-banner-icon { color: var(--rose); }
+
+        .system-banner-text strong {
+            display: block;
+            font-family: 'Outfit', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-white);
+            margin-bottom: 2px;
+        }
+        .system-banner-text p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        /* Hero section layout */
+        .dashboard-hero-section {
+            display: grid;
+            grid-template-columns: 1.3fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 900px) {
+            .dashboard-hero-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .hero-gauge-card {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            justify-content: flex-start;
+            gap: 24px;
+        }
+
+        .gauge-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-secondary);
+            font-weight: 700;
+        }
+
+        .hero-climate-column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .climate-mini-card {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 20px 24px;
+        }
+
+        .climate-mini-card.temp {
+            border-left: 3px solid var(--rose);
+        }
+        .climate-mini-card.hum {
+            border-left: 3px solid var(--accent-color);
+        }
+
+        .climate-icon {
+            font-size: 18px;
+            color: var(--text-secondary);
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.02);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .climate-mini-card.temp .climate-icon { color: var(--rose); }
+        .climate-mini-card.hum .climate-icon { color: var(--accent-color); }
+
+        .climate-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .climate-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-secondary);
+            font-weight: 700;
+        }
+
+        .climate-mini-card .climate-value {
+            font-family: 'Outfit', sans-serif;
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-white);
+        }
+
+        /* KPIs layout (Analytics View) */
         .kpi-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 24px;
         }
 
@@ -298,6 +472,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            border-top: 1px solid rgba(255, 255, 255, 0.02);
         }
 
         .kpi-info {
@@ -315,56 +490,58 @@
         }
 
         .kpi-value {
-            font-size: 28px;
-            font-weight: 900;
+            font-size: 26px;
+            font-weight: 700;
             color: var(--text-white);
-            font-family: 'Outfit', sans-serif;
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: -0.5px;
         }
 
         .kpi-icon {
-            width: 54px;
-            height: 54px;
-            border-radius: 14px;
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px;
+            font-size: 20px;
+            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.02);
         }
 
         .kpi-icon.yellow {
-            background: rgba(251, 191, 36, 0.1);
+            background: rgba(245, 158, 11, 0.06);
             color: var(--amber);
-            border: 1px solid rgba(251, 191, 36, 0.15);
+            border: 1px solid rgba(245, 158, 11, 0.12);
         }
 
         .kpi-icon.blue {
-            background: rgba(129, 140, 248, 0.1);
+            background: rgba(59, 130, 246, 0.06);
             color: var(--accent-color);
-            border: 1px solid rgba(129, 140, 248, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.12);
         }
 
         .kpi-icon.red {
-            background: rgba(248, 113, 113, 0.1);
+            background: rgba(244, 63, 94, 0.06);
             color: var(--rose);
-            border: 1px solid rgba(248, 113, 113, 0.15);
+            border: 1px solid rgba(244, 63, 94, 0.12);
         }
 
         .kpi-icon.green {
-            background: rgba(52, 211, 153, 0.1);
+            background: rgba(16, 185, 129, 0.06);
             color: var(--emerald);
-            border: 1px solid rgba(52, 211, 153, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.12);
         }
 
         /* Appliance Grid and Control Cards */
         .section-header {
             font-family: 'Outfit', sans-serif;
-            font-size: 18px;
+            font-size: 19px;
             font-weight: 700;
             color: var(--text-white);
-            margin-bottom: 20px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            margin-bottom: 4px;
         }
 
         .appliances-grid {
@@ -377,17 +554,28 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
-            border-width: 1px;
-            border-style: solid;
-            border-color: var(--card-border);
-            background: linear-gradient(180deg, rgba(30, 41, 59, 0.3) 0%, rgba(30, 41, 59, 0.1) 100%);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 24px;
+            background: rgba(20, 26, 38, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .appliance-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255,255,255,0.12);
         }
 
         .appliance-card.active {
             border-color: var(--emerald);
-            background: linear-gradient(180deg, rgba(30, 41, 59, 0.4) 0%, rgba(16, 185, 129, 0.04) 100%);
-            box-shadow: 0 8px 30px rgba(16, 185, 129, 0.05);
+            background: linear-gradient(180deg, rgba(20, 26, 38, 0.5) 0%, rgba(16, 185, 129, 0.02) 100%);
+        }
+
+        .appliance-card.anomaly-state {
+            border-color: var(--rose);
+            background: linear-gradient(180deg, rgba(20, 26, 38, 0.5) 0%, rgba(244, 63, 94, 0.03) 100%);
         }
 
         .card-top {
@@ -398,28 +586,102 @@
 
         .appliance-title {
             display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .appliance-icon-wrapper {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.02);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: var(--text-secondary);
+            transition: all 0.3s;
+        }
+
+        .appliance-card.active .appliance-icon-wrapper {
+            color: var(--emerald);
+            background: rgba(16, 185, 129, 0.06);
+        }
+
+        .appliance-card.anomaly-state .appliance-icon-wrapper {
+            color: var(--rose);
+            background: rgba(244, 63, 94, 0.06);
+            animation: pulse-danger-icon 2s infinite;
+        }
+
+        @keyframes pulse-danger-icon {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .appliance-meta-text {
+            display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 2px;
         }
 
         .appliance-name {
-            font-size: 18px;
-            font-weight: 700;
+            font-family: 'Outfit', sans-serif;
+            font-size: 17px;
+            font-weight: 600;
             color: var(--text-white);
         }
 
         .appliance-pin {
-            font-size: 11px;
+            font-size: 10px;
             color: var(--text-secondary);
-            font-weight: 500;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        /* Status Chip Badges */
+        .status-chip {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 9.5px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .status-chip.neutral {
+            background: rgba(255,255,255,0.03);
+            color: var(--text-secondary);
+        }
+
+        .status-chip.active {
+            background: rgba(16, 185, 129, 0.06);
+            color: var(--emerald);
+            border-color: rgba(16, 185, 129, 0.15);
+        }
+
+        .status-chip.anomaly {
+            background: rgba(244, 63, 94, 0.06);
+            color: var(--rose);
+            border-color: rgba(244, 63, 94, 0.2);
+            animation: pulse-anomaly-badge 2s infinite;
+        }
+
+        @keyframes pulse-anomaly-badge {
+            0% { opacity: 0.95; }
+            50% { opacity: 0.5; }
+            100% { opacity: 0.95; }
         }
 
         /* Toggle Switches */
         .switch {
             position: relative;
             display: inline-block;
-            width: 52px;
-            height: 28px;
+            width: 46px;
+            height: 22px;
         }
 
         .switch input {
@@ -435,8 +697,8 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: #1e293b;
-            transition: .4s;
+            background-color: rgba(0, 0, 0, 0.2);
+            transition: .2s cubic-bezier(0.4, 0, 0.2, 1);
             border-radius: 34px;
             border: 1px solid var(--card-border);
         }
@@ -444,23 +706,23 @@
         .slider:before {
             position: absolute;
             content: "";
-            height: 20px;
-            width: 20px;
+            height: 14px;
+            width: 14px;
             left: 3px;
             bottom: 3px;
             background-color: var(--text-secondary);
-            transition: .4s;
+            transition: .2s cubic-bezier(0.4, 0, 0.2, 1);
             border-radius: 50%;
         }
 
         input:checked + .slider {
-            background-color: var(--emerald);
-            border-color: var(--emerald);
+            background-color: rgba(16, 185, 129, 0.12);
+            border-color: rgba(16, 185, 129, 0.25);
         }
 
         input:checked + .slider:before {
             transform: translateX(24px);
-            background-color: var(--bg-color);
+            background-color: var(--emerald);
         }
 
         /* Power readout */
@@ -472,20 +734,21 @@
 
         .card-power-w {
             font-size: 26px;
-            font-weight: 900;
+            font-weight: 700;
             color: var(--text-secondary);
-            font-family: 'Outfit', sans-serif;
+            font-family: 'JetBrains Mono', monospace;
             transition: color 0.3s;
         }
 
         .appliance-card.active .card-power-w {
-            color: var(--amber);
+            color: var(--text-white);
         }
 
         .card-power-a {
             font-size: 12px;
             color: var(--text-secondary);
-            font-weight: 500;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
         }
 
         /* Billing Analytics styles */
@@ -495,6 +758,12 @@
             gap: 24px;
         }
 
+        @media (max-width: 1024px) {
+            .billing-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
         .chart-card {
             min-height: 400px;
         }
@@ -502,16 +771,16 @@
         .slab-breakdown {
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 12px;
         }
 
         .slab-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 16px;
+            padding: 14px 18px;
             border-radius: 10px;
-            background: rgba(255, 255, 255, 0.01);
+            background: rgba(0, 0, 0, 0.15);
             border: 1px solid var(--card-border);
         }
 
@@ -522,14 +791,16 @@
         }
 
         .slab-rate {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--text-secondary);
+            margin-top: 2px;
         }
 
         .slab-cost {
             font-size: 14px;
             font-weight: 700;
             color: var(--text-white);
+            font-family: 'JetBrains Mono', monospace;
         }
 
         .cost-comparison-container {
@@ -540,10 +811,11 @@
         }
 
         .compare-box {
-            padding: 16px;
+            padding: 20px;
             border-radius: 12px;
             border: 1px solid var(--card-border);
-            background: rgba(15, 23, 42, 0.4);
+            background: rgba(0, 0, 0, 0.15);
+            text-align: center;
         }
 
         .compare-title {
@@ -552,12 +824,12 @@
             letter-spacing: 1px;
             color: var(--text-secondary);
             font-weight: 700;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .compare-value {
-            font-size: 24px;
-            font-weight: 800;
+            font-size: 26px;
+            font-weight: 700;
             color: var(--text-white);
             font-family: 'Outfit', sans-serif;
         }
@@ -568,55 +840,63 @@
 
         /* System Logs styling */
         .log-terminal {
-            background: #060913;
+            background: #060910;
             border: 1px solid var(--card-border);
             border-radius: 12px;
-            padding: 20px;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 13px;
-            line-height: 1.6;
+            padding: 24px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12.5px;
+            line-height: 1.7;
             height: 480px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
         }
 
         .log-entry {
             display: flex;
-            gap: 12px;
+            gap: 14px;
+            align-items: flex-start;
         }
 
         .log-time {
             color: #475569;
             flex-shrink: 0;
+            user-select: none;
         }
 
         .log-level {
-            font-weight: bold;
+            font-weight: 700;
             flex-shrink: 0;
-            padding: 0 6px;
+            padding: 1px 8px;
             border-radius: 4px;
-            font-size: 11px;
+            font-size: 10px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
         }
 
         .log-level.info {
-            background: rgba(52, 211, 153, 0.1);
+            background: rgba(16, 185, 129, 0.08);
             color: var(--emerald);
+            border: 1px solid rgba(16, 185, 129, 0.15);
         }
 
         .log-level.warning {
-            background: rgba(251, 191, 36, 0.1);
+            background: rgba(245, 158, 11, 0.08);
             color: var(--amber);
+            border: 1px solid rgba(245, 158, 11, 0.15);
         }
 
         .log-level.error {
-            background: rgba(248, 113, 113, 0.1);
+            background: rgba(244, 63, 94, 0.08);
             color: var(--rose);
+            border: 1px solid rgba(244, 63, 94, 0.15);
         }
 
         .log-msg {
-            color: #94a3b8;
+            color: #cbd5e1;
             word-break: break-all;
         }
 
@@ -628,7 +908,7 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(6, 9, 19, 0.8);
+            background: rgba(5, 7, 10, 0.85);
             backdrop-filter: blur(8px);
             z-index: 1000;
             align-items: center;
@@ -636,64 +916,63 @@
         }
 
         .lockout-modal {
-            background: var(--card-bg);
+            background: #121824;
             border: 1px solid var(--rose);
             border-radius: 16px;
-            padding: 32px;
+            padding: 40px;
             width: 440px;
-            box-shadow: 0 0 40px rgba(248, 113, 113, 0.15);
+            box-shadow: 0 10px 40px rgba(244, 63, 94, 0.15);
             text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 16px;
-            animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            gap: 20px;
+            animation: modalPop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.15);
         }
 
         @keyframes modalPop {
-            from { transform: scale(0.9); opacity: 0; }
+            from { transform: scale(0.92); opacity: 0; }
             to { transform: scale(1); opacity: 1; }
         }
 
         .lockout-icon {
-            width: 64px;
-            height: 64px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
-            background: rgba(248, 113, 113, 0.1);
+            background: rgba(244, 63, 94, 0.08);
             color: var(--rose);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 28px;
-            border: 1px solid rgba(248, 113, 113, 0.2);
-            box-shadow: 0 0 15px var(--rose-glow);
+            font-size: 24px;
+            border: 1px solid rgba(244, 63, 94, 0.2);
         }
 
         .lockout-modal h3 {
             font-family: 'Outfit', sans-serif;
             color: var(--text-white);
-            font-size: 20px;
+            font-size: 22px;
             font-weight: 700;
+            letter-spacing: -0.3px;
         }
 
         .lockout-modal p {
             font-size: 14px;
             color: var(--text-secondary);
-            line-height: 1.5;
+            line-height: 1.6;
         }
 
         .close-modal-btn {
             background: var(--rose);
             color: var(--text-white);
             border: none;
-            padding: 10px 24px;
-            border-radius: 10px;
+            padding: 12px 28px;
+            border-radius: 8px;
             font-weight: 700;
-            font-size: 13px;
+            font-size: 14px;
             cursor: pointer;
             width: 100%;
-            margin-top: 8px;
-            box-shadow: 0 4px 15px var(--rose-glow);
+            margin-top: 10px;
             transition: opacity 0.2s;
         }
 
@@ -709,11 +988,12 @@
         }
 
         .diag-box {
-            padding: 16px;
+            padding: 18px;
             border-radius: 12px;
             border: 1px solid var(--card-border);
-            background: rgba(30, 41, 59, 0.2);
+            background: rgba(0, 0, 0, 0.15);
             text-align: center;
+            transition: all 0.3s;
         }
 
         .diag-box span {
@@ -725,10 +1005,11 @@
         }
 
         .diag-box p {
-            font-size: 14px;
+            font-size: 13.5px;
             font-weight: 600;
             color: var(--text-white);
-            margin-top: 6px;
+            margin-top: 8px;
+            font-family: 'JetBrains Mono', monospace;
         }
 
         /* Tab options for Analytics */
@@ -737,15 +1018,15 @@
             background: rgba(0, 0, 0, 0.2);
             border: 1px solid var(--card-border);
             padding: 4px;
-            border-radius: 10px;
+            border-radius: 8px;
         }
 
         .range-btn {
             background: transparent;
             border: none;
             color: var(--text-secondary);
-            padding: 8px 16px;
-            border-radius: 8px;
+            padding: 6px 12px;
+            border-radius: 6px;
             font-size: 12px;
             font-weight: 700;
             cursor: pointer;
@@ -753,7 +1034,7 @@
         }
 
         .range-btn.active {
-            background: rgba(129, 140, 248, 0.15);
+            background: var(--card-active);
             color: var(--text-white);
         }
     </style>
@@ -786,6 +1067,13 @@
             </ul>
 
             <div class="sidebar-footer">
+                <div class="toggle-row">
+                    <span class="toggle-row-label">Auto-Shedding</span>
+                    <label class="switch">
+                        <input type="checkbox" id="auto-shedding-toggle" onchange="toggleAutoShedding(this)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
                 <div class="api-input-box">
                     <label>Target API Address</label>
                     <input type="text" id="api-endpoint" value="" placeholder="http://localhost:8000">
@@ -801,71 +1089,146 @@
                     <h2 id="view-title">Dashboard Overview</h2>
                     <p id="view-subtitle">Live gateway diagnostics and energy load statistics.</p>
                 </div>
-                <div id="conn-badge" class="status-badge">
+                <div id="conn-badge" class="status-badge online">
                     <div class="dot"></div> <span id="conn-text">GATEWAY ONLINE</span>
                 </div>
             </header>
 
             <!-- 1. DASHBOARD VIEW -->
             <div id="tab-dashboard" class="tab-view active">
-                <div class="kpi-grid">
-                    <div class="glass-card kpi-card">
-                        <div class="kpi-info">
-                            <span class="kpi-label">Active Power Load</span>
-                            <div id="total-power" class="kpi-value">0.0 W</div>
-                        </div>
-                        <div class="kpi-icon yellow"><i class="fa-solid fa-plug"></i></div>
+                <!-- Power Source Banners -->
+                <div id="solar-banner" class="system-banner solar" style="display: none;">
+                    <div class="system-banner-icon"><i class="fa-solid fa-sun"></i></div>
+                    <div class="system-banner-text">
+                        <strong>Solar Generation Active</strong>
+                        <p>The total active load has exceeded the 400W threshold. The system has automatically switched to solar power to safeguard the grid.</p>
                     </div>
-                    <div class="glass-card kpi-card">
-                        <div class="kpi-info">
-                            <span class="kpi-label">Current Flow</span>
-                            <div id="total-current" class="kpi-value">0.00 A</div>
-                        </div>
-                        <div class="kpi-icon blue"><i class="fa-solid fa-wave-square"></i></div>
-                    </div>
-                    <div class="glass-card kpi-card">
-                        <div class="kpi-info">
-                            <span class="kpi-label">Indoor Climate</span>
-                            <div id="climate-temp" class="kpi-value">0.0°C</div>
-                        </div>
-                        <div class="kpi-icon red"><i class="fa-solid fa-thermometer"></i></div>
-                    </div>
-                    <div class="glass-card kpi-card">
-                        <div class="kpi-info">
-                            <span class="kpi-label">Climate Humidity</span>
-                            <div id="climate-hum" class="kpi-value">0.0%</div>
-                        </div>
-                        <div class="kpi-icon green"><i class="fa-solid fa-droplet"></i></div>
+                </div>
+                <div id="grid-banner" class="system-banner grid" style="display: none;">
+                    <div class="system-banner-icon"><i class="fa-solid fa-bolt"></i></div>
+                    <div class="system-banner-text">
+                        <strong>Main Grid Active</strong>
+                        <p>Total appliance load is within the safety threshold of 400W. Running on standard grid supply.</p>
                     </div>
                 </div>
 
-                <div class="section-header">
-                    <i class="fa-solid fa-network-wired" style="color: var(--accent-color);"></i>
-                    Live Appliance Status
+                <!-- Preemptive Overload & Shedding Banners -->
+                <div id="preemptive-warning-banner" class="system-banner warning" style="display: none;">
+                    <div class="system-banner-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                    <div class="system-banner-text">
+                        <strong>Preemptive Overload Warning</strong>
+                        <p id="preemptive-warning-text">Future demand is predicted to exceed the 400W limit. Consider manually shedding loads.</p>
+                    </div>
+                </div>
+                <div id="shed-triggered-banner" class="system-banner solar" style="display: none;">
+                    <div class="system-banner-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                    <div class="system-banner-text">
+                        <strong>Preemptive Load Shedding Active</strong>
+                        <p id="shed-triggered-text">Automatically turned off device to safeguard the grid.</p>
+                    </div>
+                </div>
+
+                <!-- Hero Section: Central Gauge & Climate -->
+                <div class="dashboard-hero-section">
+                    <!-- Main Bus Load Meter Panel -->
+                    <div class="glass-card hero-gauge-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                            <span class="gauge-title">Main Bus Active Load</span>
+                            <span id="total-power-source-badge" class="status-chip active">GRID SUPPLY</span>
+                        </div>
+                        
+                        <div style="display: flex; align-items: baseline; gap: 10px; margin-top: 10px;">
+                            <span id="total-power" style="font-family: 'Outfit', sans-serif; font-size: 38px; font-weight: 700; color: var(--text-white);">0.0 W</span>
+                            <span id="total-current" style="font-family: 'JetBrains Mono', monospace; font-size: 14px; color: var(--accent-color); font-weight: 600;">0.00 A</span>
+                        </div>
+                        
+                        <!-- Progress load bar -->
+                        <div style="width: 100%; margin-top: 10px;">
+                            <div class="progress-bar-container" style="height: 8px; background: rgba(0,0,0,0.2); border-radius: 6px; overflow: hidden; border: 1px solid var(--card-border);">
+                                <div id="bus-load-fill" style="height: 100%; width: 0%; background: var(--accent-color); transition: width 0.6s ease; border-radius: 6px;"></div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-secondary); margin-top: 6px; font-family: 'JetBrains Mono', monospace;">
+                                <span>0W (Idle)</span>
+                                <span>200W</span>
+                                <span>400W (Limit)</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Climate Cards Column -->
+                    <div class="hero-climate-column">
+                        <div class="glass-card climate-mini-card temp">
+                            <div class="climate-icon"><i class="fa-solid fa-temperature-half"></i></div>
+                            <div class="climate-info">
+                                <span class="climate-label">Ambient Temperature</span>
+                                <span id="climate-temp" class="climate-value">0.0°C</span>
+                            </div>
+                        </div>
+                        <div class="glass-card climate-mini-card hum">
+                            <div class="climate-icon"><i class="fa-solid fa-droplet"></i></div>
+                            <div class="climate-info">
+                                <span class="climate-label">Relative Humidity</span>
+                                <span id="climate-hum" class="climate-value">0.0%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-header" style="margin-top: 16px;">
+                    <i class="fa-solid fa-network-wired" style="color: var(--accent-color); font-size: 16px;"></i>
+                    Live Appliance status
                 </div>
 
                 <div class="appliances-grid" id="dashboard-appliances">
-                    <!-- Cards will be populated dynamically by JS -->
+                    <!-- Cards populated dynamically by JS -->
+                </div>
+
+                <div class="section-header" style="margin-top: 32px;">
+                    <i class="fa-solid fa-sun" style="color: var(--accent-color); font-size: 16px;"></i>
+                    Solar Generation Forecast (Next 3 Hours)
+                </div>
+                <div class="glass-card" style="margin-top: 16px; padding: 24px;">
+                    <div class="kpi-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 24px; gap: 16px;">
+                        <div class="glass-card kpi-card" style="background: rgba(0,0,0,0.15); border: 1px solid var(--card-border);">
+                            <div class="kpi-info">
+                                <span class="kpi-label">In 1 Hour</span>
+                                <div id="solar-f1" class="kpi-value" style="color: var(--accent-color); font-size: 20px;">0.0 W</div>
+                            </div>
+                        </div>
+                        <div class="glass-card kpi-card" style="background: rgba(0,0,0,0.15); border: 1px solid var(--card-border);">
+                            <div class="kpi-info">
+                                <span class="kpi-label">In 2 Hours</span>
+                                <div id="solar-f2" class="kpi-value" style="color: var(--accent-color); font-size: 20px;">0.0 W</div>
+                            </div>
+                        </div>
+                        <div class="glass-card kpi-card" style="background: rgba(0,0,0,0.15); border: 1px solid var(--card-border);">
+                            <div class="kpi-info">
+                                <span class="kpi-label">In 3 Hours</span>
+                                <div id="solar-f3" class="kpi-value" style="color: var(--accent-color); font-size: 20px;">0.0 W</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="solar-forecast-chart" style="height: 250px;"></div>
                 </div>
             </div>
 
             <!-- 2. CONTROL PANEL VIEW -->
             <div id="tab-control" class="tab-view">
                 <div class="section-header">
-                    <i class="fa-solid fa-toggle-on" style="color: var(--emerald);"></i>
+                    <i class="fa-solid fa-toggle-on" style="color: var(--accent-color); font-size: 16px;"></i>
                     Relay Actuators (Anti-Chatter Safety Locks Active)
                 </div>
 
                 <div class="appliances-grid" id="control-switches">
-                    <!-- Switches will be populated dynamically -->
+                    <!-- Switches populated dynamically -->
                 </div>
 
-                <div class="glass-card" style="margin-top: 16px;">
+                <div class="glass-card" style="margin-top: 16px; padding: 24px;">
                     <div class="section-header" style="font-size: 15px; margin-bottom: 12px;">
-                        <i class="fa-solid fa-circle-info" style="color: var(--accent-color);"></i>
+                        <i class="fa-solid fa-circle-info" style="color: var(--accent-color); font-size: 14px;"></i>
                         Anti-Chattering Protection Detail
                     </div>
-                    <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.6;">
+                    <p style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.7;">
                         A safety cooldown lock of <b>3 seconds</b> is enforced programmatically in the FastAPI server and replicated in this client UI to prevent relay contacts from chattering. Rapid cycling of relays can weld the physical contacts together and damage the connected ESP32 pin maps.
                     </p>
                 </div>
@@ -883,14 +1246,14 @@
                     </div>
                     <div class="glass-card kpi-card">
                         <div class="kpi-info">
-                            <span class="kpi-label">Flat-Rate Billing Cost (₹7/kWh)</span>
+                            <span class="kpi-label">Flat-Rate Billing (₹7/kWh)</span>
                             <div id="analytics-flat-cost" class="kpi-value">₹0.00</div>
                         </div>
                         <div class="kpi-icon yellow"><i class="fa-solid fa-indian-rupee-sign"></i></div>
                     </div>
                     <div class="glass-card kpi-card">
                         <div class="kpi-info">
-                            <span class="kpi-label">Tiered Slab Billing Cost</span>
+                            <span class="kpi-label">Tiered Slab Billing</span>
                             <div id="analytics-tiered-cost" class="kpi-value">₹0.00</div>
                         </div>
                         <div class="kpi-icon green"><i class="fa-solid fa-file-invoice-dollar"></i></div>
@@ -898,12 +1261,12 @@
                 </div>
 
                 <div class="billing-grid">
-                    <!-- Apex Chart -->
+                    <!-- Area Chart -->
                     <div class="glass-card chart-card">
                         <div class="section-header" style="justify-content: space-between; margin-bottom: 24px;">
-                            <div style="display:flex; align-items:center; gap:10px;">
-                                <i class="fa-solid fa-chart-area" style="color: var(--accent-color);"></i>
-                                Historical Consumption Trend (Watts)
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <i class="fa-solid fa-chart-area" style="color: var(--accent-color); font-size: 16px;"></i>
+                                Historical Consumption Trend
                             </div>
                             <div class="range-selector">
                                 <button class="range-btn active" id="range-today" onclick="setMetricsRange('today')">Today</button>
@@ -914,11 +1277,11 @@
                         <div id="power-history-chart"></div>
                     </div>
 
-                    <!-- Cost calculator breakdown panel -->
-                    <div class="glass-card" style="display:flex; flex-direction:column; gap:20px;">
-                        <div class="section-header" style="margin-bottom:0;">
-                            <i class="fa-solid fa-calculator" style="color: var(--amber);"></i>
-                            Tiered Indian Slab Tariff
+                    <!-- Tariff slabs breakdown panel -->
+                    <div class="glass-card" style="display:flex; flex-direction:column; gap:24px;">
+                        <div class="section-header">
+                            <i class="fa-solid fa-calculator" style="color: var(--accent-color); font-size: 16px;"></i>
+                            Tariff slab rate (INR)
                         </div>
                         
                         <div class="slab-breakdown">
@@ -946,7 +1309,7 @@
                         </div>
 
                         <div class="cost-comparison-container">
-                            <div class="compare-box">
+                            <div class="compare-box" style="border-top: 2px solid var(--accent-color);">
                                 <div class="compare-title">Tiered Tariff Saving</div>
                                 <div id="saving-value" class="compare-value saving">₹0.00</div>
                             </div>
@@ -958,12 +1321,12 @@
             <!-- 4. GATEWAY LOGS VIEW -->
             <div id="tab-logs" class="tab-view">
                 <div class="section-header" style="justify-content: space-between; margin-bottom: 20px;">
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <i class="fa-solid fa-terminal" style="color: var(--accent-color);"></i>
-                        System Journal
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <i class="fa-solid fa-terminal" style="color: var(--accent-color); font-size: 16px;"></i>
+                        System Journal Logs
                     </div>
-                    <div style="font-size: 11px; color: var(--text-secondary); font-weight: 600;">
-                        Auto-refresh active (3s)
+                    <div style="font-size: 11px; color: var(--text-secondary); font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;">
+                        Live update active (3s)
                     </div>
                 </div>
 
@@ -975,15 +1338,15 @@
             <!-- Diagnostics footer -->
             <div class="diag-grid">
                 <div class="diag-box">
-                    <span>Active Database Path</span>
+                    <span>Active SQLite Database</span>
                     <p id="diag-db-path">Loading...</p>
                 </div>
                 <div class="diag-box">
-                    <span>Local Broker Connection (Mosquitto)</span>
+                    <span>Mosquitto Broker Link</span>
                     <p id="diag-broker-status">Checking...</p>
                 </div>
                 <div class="diag-box">
-                    <span>Local System Clock</span>
+                    <span>Edge Clock</span>
                     <p id="diag-clock">Loading...</p>
                 </div>
             </div>
@@ -1007,6 +1370,7 @@
         let currentTab = 'dashboard';
         let activeRange = 'today';
         let apexChartInstance = null;
+        let solarChartInstance = null;
         let lastToggleTime = {}; // Cooldown tracking (appliance -> timestamp)
 
         // Automatically resolve API Base URL
@@ -1074,6 +1438,7 @@
             document.getElementById('lockout-overlay').style.display = 'flex';
         }
 
+        // Close lockout safety modal
         function closeLockoutModal() {
             document.getElementById('lockout-overlay').style.display = 'none';
         }
@@ -1099,13 +1464,13 @@
                         }
                     }
                 },
-                colors: ['#818cf8'],
+                colors: ['#3b82f6'],
                 fill: {
                     type: 'gradient',
                     gradient: {
                         shadeIntensity: 1,
-                        opacityFrom: 0.45,
-                        opacityTo: 0.05,
+                        opacityFrom: 0.25,
+                        opacityTo: 0.01,
                         stops: [0, 90, 100]
                     }
                 },
@@ -1124,7 +1489,7 @@
                     }
                 },
                 grid: {
-                    borderColor: 'rgba(255,255,255,0.03)',
+                    borderColor: 'rgba(255,255,255,0.02)',
                     strokeDashArray: 3
                 },
                 tooltip: {
@@ -1298,7 +1663,54 @@
                 const data = await res.json();
 
                 badge.classList.remove('offline');
+                badge.classList.add('online');
                 badgeText.innerText = "GATEWAY ONLINE";
+
+                // Update power source banners
+                const solarBanner = document.getElementById('solar-banner');
+                const gridBanner = document.getElementById('grid-banner');
+                if (solarBanner && gridBanner) {
+                    if (data.power_source === 'Solar') {
+                        solarBanner.style.display = 'flex';
+                        gridBanner.style.display = 'none';
+                    } else {
+                        solarBanner.style.display = 'none';
+                        gridBanner.style.display = 'flex';
+                    }
+                }
+
+                // Update auto-shedding checkbox state
+                const autoShedToggle = document.getElementById('auto-shedding-toggle');
+                if (autoShedToggle) {
+                    autoShedToggle.checked = data.auto_shedding_enabled;
+                }
+
+                // Update preemptive warning and auto-shed banners
+                const warningBanner = document.getElementById('preemptive-warning-banner');
+                const warningText = document.getElementById('preemptive-warning-text');
+                const shedBanner = document.getElementById('shed-triggered-banner');
+                const shedText = document.getElementById('shed-triggered-text');
+                
+                if (warningBanner && shedBanner) {
+                    if (data.preemptive_warning) {
+                        if (data.auto_shedding_enabled) {
+                            warningBanner.style.display = 'none';
+                            if (data.shed_triggered) {
+                                shedBanner.style.display = 'flex';
+                                shedText.innerText = `Auto-Shedding Active: Automatically turned OFF ${data.shedded_appliance} to prevent predicted overload (${data.predicted_max_power} W > 400W).`;
+                            } else {
+                                shedBanner.style.display = 'none';
+                            }
+                        } else {
+                            shedBanner.style.display = 'none';
+                            warningBanner.style.display = 'flex';
+                            warningText.innerText = `Preemptive Overload Warning: Future load is predicted to peak at ${data.predicted_max_power} W in the next hour. Consider manually shutting down devices.`;
+                        }
+                    } else {
+                        warningBanner.style.display = 'none';
+                        shedBanner.style.display = 'none';
+                    }
+                }
 
                 // Update static diagnostics
                 dbPathEl.innerText = "/home/jetson/smartelectric/edge/backend/edge_iot.db";
@@ -1315,14 +1727,39 @@
                     totalCurrent += tel ? parseFloat(tel.current || 0.0) : 0.0;
                 }
 
+                // Update total text
                 document.getElementById('total-power').innerText = `${totalPower.toFixed(1)} W`;
                 document.getElementById('total-current').innerText = `${totalCurrent.toFixed(2)} A`;
+                
+                // Update Bus Load progress bar
+                const busFill = document.getElementById('bus-load-fill');
+                const loadPercentage = Math.min((totalPower / 400.0) * 100, 100);
+                if (busFill) {
+                    busFill.style.width = `${loadPercentage}%`;
+                    
+                    if (totalPower > 350) {
+                        busFill.style.background = 'var(--rose)';
+                    } else if (totalPower > 250) {
+                        busFill.style.background = 'var(--amber)';
+                    } else {
+                        busFill.style.background = 'var(--accent-color)';
+                    }
+                }
+
+                // Update Power Source Badge
+                const sourceBadge = document.getElementById('total-power-source-badge');
+                if (sourceBadge) {
+                    sourceBadge.innerText = data.power_source === 'Solar' ? 'SOLAR SUPPLY' : 'GRID SUPPLY';
+                    sourceBadge.className = data.power_source === 'Solar' ? 'status-chip active' : 'status-chip neutral';
+                }
+
                 document.getElementById('climate-temp').innerText = `${data.dht.temperature.toFixed(1)}°C`;
                 document.getElementById('climate-hum').innerText = `${data.dht.humidity.toFixed(1)}%`;
 
                 // Update views
                 if (currentTab === 'dashboard') {
                     updateDashboardGrid(data);
+                    fetchSolarForecast();
                 } else if (currentTab === 'control') {
                     updateControlGrid(data);
                 } else if (currentTab === 'analytics') {
@@ -1333,6 +1770,7 @@
                 }
 
             } catch (e) {
+                badge.classList.remove('online');
                 badge.classList.add('offline');
                 badgeText.innerText = "GATEWAY OFFLINE";
                 brokerStatusEl.innerText = "Disconnected";
@@ -1342,29 +1780,145 @@
             }
         }
 
-        // Render Appliance Grid for Dashboard view
+        // Toggle auto-shedding setting via API
+        async function toggleAutoShedding(checkboxEl) {
+            const apiBase = getApiUrl();
+            try {
+                const res = await fetch(`${apiBase}/api/control/shedding`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ enabled: checkboxEl.checked })
+                });
+                if (!res.ok) throw new Error("Auto-shedding toggle failed");
+            } catch (e) {
+                console.error(e);
+                checkboxEl.checked = !checkboxEl.checked;
+            }
+        }
+
+        // Fetch and update solar forecast
+        async function fetchSolarForecast() {
+            const apiBase = getApiUrl();
+            try {
+                const res = await fetch(`${apiBase}/api/solar/forecast`);
+                if (!res.ok) throw new Error("Solar forecast fetch error");
+                const data = await res.json();
+                
+                const f = data.forecast;
+                document.getElementById('solar-f1').innerText = `${f[0].toFixed(1)} W`;
+                document.getElementById('solar-f2').innerText = `${f[1].toFixed(1)} W`;
+                document.getElementById('solar-f3').innerText = `${f[2].toFixed(1)} W`;
+                
+                // Update chart
+                if (solarChartInstance) {
+                    solarChartInstance.updateSeries([{
+                        name: 'Forecasted Output (W)',
+                        data: [
+                            { x: '1 Hour Ahead', y: f[0] },
+                            { x: '2 Hours Ahead', y: f[1] },
+                            { x: '3 Hours Ahead', y: f[2] }
+                        ]
+                    }]);
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        // Initialize ApexCharts for Solar Forecasting
+        function initSolarChart() {
+            const options = {
+                series: [{
+                    name: 'Forecasted Output (W)',
+                    data: []
+                }],
+                chart: {
+                    type: 'line',
+                    height: 220,
+                    background: 'transparent',
+                    foreColor: '#64748b',
+                    toolbar: { show: false }
+                },
+                colors: ['#10b981'],
+                stroke: { curve: 'smooth', width: 3 },
+                markers: { size: 5, colors: ['#10b981'] },
+                grid: {
+                    borderColor: 'rgba(255,255,255,0.02)',
+                    strokeDashArray: 3
+                },
+                yaxis: {
+                    labels: {
+                        formatter: function (value) {
+                            return Math.round(value) + " W";
+                        }
+                    }
+                },
+                tooltip: { theme: 'dark' }
+            };
+            const chartEl = document.getElementById('solar-forecast-chart');
+            if (chartEl) {
+                solarChartInstance = new ApexCharts(chartEl, options);
+                solarChartInstance.render();
+            }
+        }
+
+        // Render Appliance Grid Cards for Dashboard view
         function updateDashboardGrid(data) {
             const container = document.getElementById('dashboard-appliances');
+            const limits = { 'TV': 150, 'Light': 50, 'Fan': 100, 'Refrigerator': 250 };
+            
+            // Map appliance names to beautiful fontawesome icons
+            const iconMap = {
+                'TV': 'fa-tv',
+                'Light': 'fa-lightbulb',
+                'Fan': 'fa-fan',
+                'Refrigerator': 'fa-snowflake'
+            };
+
             container.innerHTML = data.appliances.map(app => {
                 const tel = data.latest_telemetry[app.name];
                 const power = tel ? tel.power : 0.0;
                 const current = tel ? tel.current : 0.0;
                 const activeClass = app.status === 1 ? 'active' : '';
-                const badgeText = app.status === 1 ? 'ON' : 'OFF';
+                
+                // Anomaly evaluation
+                const anomalyDesc = data.anomaly_status && data.anomaly_status[app.name];
+                const badgeText = anomalyDesc ? `⚠️ Anomaly` : (app.status === 1 ? 'Active' : 'Standby');
+                const badgeClass = anomalyDesc ? 'anomaly' : (app.status === 1 ? 'active' : 'neutral');
+                const anomalyCardClass = anomalyDesc ? 'anomaly-state' : '';
+                
+                const iconClass = iconMap[app.name] || 'fa-plug';
+                
+                // Calculate percentage relative to limit
+                const limit = limits[app.name] || 200;
+                const percentage = Math.min((power / limit) * 100, 100);
+                
+                let barColor = 'var(--emerald)';
+                if (anomalyDesc) barColor = 'var(--rose)';
+                else if (app.status !== 1) barColor = 'rgba(255,255,255,0.05)';
                 
                 return `
-                    <div class="glass-card appliance-card ${activeClass}" id="card-${app.name}">
+                    <div class="glass-card appliance-card ${activeClass} ${anomalyCardClass}" id="card-${app.name}">
                         <div class="card-top">
                             <div class="appliance-title">
-                                <span class="appliance-name">${app.name}</span>
-                                <span class="appliance-pin">GPIO Pin ${app.relay_pin}</span>
+                                <div class="appliance-icon-wrapper">
+                                    <i class="fa-solid ${iconClass}"></i>
+                                </div>
+                                <div class="appliance-meta-text">
+                                    <span class="appliance-name">${app.name}</span>
+                                    <span class="appliance-pin">GPIO Pin ${app.relay_pin}</span>
+                                </div>
                             </div>
-                            <span class="log-level ${app.status === 1 ? 'info' : 'error'}" style="padding: 4px 10px; border-radius: 20px; font-weight:700;">${badgeText}</span>
+                            <span class="status-chip ${badgeClass}">${badgeText}</span>
                         </div>
-                        <div class="card-power-info">
+                        <div class="card-power-info" style="margin-top: 10px;">
                             <div class="card-power-w">${power.toFixed(1)} W</div>
                             <div class="card-power-a">${current.toFixed(2)} Amps</div>
                         </div>
+                        <div class="appliance-progress-track" style="height: 4px; background: rgba(255,255,255,0.03); border-radius: 4px; overflow: hidden; margin-top: 14px; border: 1px solid rgba(255,255,255,0.01);">
+                            <div class="appliance-progress-fill" style="height: 100%; width: ${percentage}%; background: ${barColor}; transition: width 0.6s ease; border-radius: 4px;"></div>
+                        </div>
+                        ${anomalyDesc ? `<div style="font-size: 11.5px; color: var(--rose); margin-top: 8px; font-weight: 600;"><i class="fa-solid fa-triangle-exclamation"></i> ${anomalyDesc}</div>` : ''}
                     </div>
                 `;
             }).join('');
@@ -1407,6 +1961,7 @@
         // Initialization
         window.addEventListener('load', () => {
             initChart();
+            initSolarChart();
             switchTab('dashboard');
             
             // Loop polling

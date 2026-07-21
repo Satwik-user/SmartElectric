@@ -10,6 +10,20 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from paho.mqtt import client as mqtt
 
+# Import ML anomaly and solar forecaster
+try:
+    from ml_anomaly import detect_anomaly
+    from ml_solar_forecaster import predict_solar_forecast
+except ImportError:
+    # Dummy fallbacks
+    def detect_anomaly(app_name, current, power, voltage):
+        return False
+    def predict_solar_forecast(temp, hum, hour):
+        return [100.0, 50.0, 0.0]
+
+# Global Auto-Shedding Flag
+auto_shedding_enabled = False
+
 # Resolve path to the static HTML frontend index.html
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FRONTEND_FILE_PATH = os.path.join(os.path.dirname(BASE_DIR), "frontend_static", "index.html")
@@ -50,27 +64,30 @@ class ApplianceResponse(BaseModel):
     last_updated: str
 
 def publish_mqtt_command(appliance: str, state: int):
-    """Connects to the local MQTT broker, publishes a relay command, and disconnects."""
-    try:
-        if hasattr(mqtt, "CallbackAPIVersion"):
-            client = mqtt.Client(callback_api_version=mqtt.CallbackAPIVersion.VERSION2)
-        else:
-            client = mqtt.Client()
+    """Connects to the local MQTT broker, publishes a relay command, and disconnects without blocking."""
+    def run_publish():
+        try:
+            if hasattr(mqtt, "CallbackAPIVersion"):
+                client = mqtt.Client(callback_api_version=mqtt.CallbackAPIVersion.VERSION2)
+            else:
+                client = mqtt.Client()
 
-        client.connect(MQTT_BROKER, MQTT_PORT, 60)
-        
-        # Topic payload structure matching the ESP32 expectations
-        # ESP32 will subscribe to smartelectric/control/relay
-        payload = {
-            "appliance": appliance,
-            "state": state
-        }
-        client.publish("smartelectric/control/relay", json.dumps(payload), qos=1)
-        client.disconnect()
-        return True
-    except Exception as e:
-        print(f"MQTT Publish failed: {e}", file=sys.stderr)
-        return False
+            # Connect with a short keepalive to fail fast if broker is down
+            client.connect(MQTT_BROKER, MQTT_PORT, 5)
+            
+            # Topic payload structure matching the ESP32 expectations
+            payload = {
+                "appliance": appliance,
+                "state": state
+            }
+            client.publish("smartelectric/control/relay", json.dumps(payload), qos=1)
+            client.disconnect()
+        except Exception as e:
+            print(f"Non-blocking MQTT Publish failed: {e}", file=sys.stderr)
+
+    import threading
+    threading.Thread(target=run_publish, daemon=True).start()
+    return True
 
 def calculate_kwh_and_cost(avg_power_w: float, hours: float):
     """Calculates kWh and tiered energy costs in INR (₹) based on Average Power and duration."""
@@ -110,9 +127,45 @@ def read_root():
     except Exception as e:
         return f"<html><body><h3>Error loading static UI: {e}</h3></body></html>"
 
+class SheddingRequest(BaseModel):
+    enabled: bool
+
+@app.post("/api/control/shedding")
+def toggle_auto_shedding(req: SheddingRequest):
+    """Enables or disables automatic preemptive load-shedding."""
+    global auto_shedding_enabled
+    auto_shedding_enabled = req.enabled
+    return {"status": "success", "auto_shedding_enabled": auto_shedding_enabled}
+
+@app.get("/api/solar/forecast")
+def get_solar_forecast():
+    """Predicts solar generation output for the next 3 hours based on current climate metrics."""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT temperature, humidity FROM dht_data ORDER BY timestamp DESC LIMIT 1")
+        row = cursor.fetchone()
+        conn.close()
+        
+        temp = row["temperature"] if row else 25.0
+        hum = row["humidity"] if row else 60.0
+        hour = datetime.now().hour
+        
+        forecast = predict_solar_forecast(temp, hum, hour)
+        return {
+            "status": "success",
+            "temperature": temp,
+            "humidity": hum,
+            "hour": hour,
+            "forecast": forecast
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Solar forecast model prediction failed: {e}")
+
 @app.get("/api/status")
 def get_system_status():
-    """Retrieves real-time statuses of all appliances, latest telemetry readings, and DHT logs."""
+    """Retrieves real-time statuses of all appliances, latest telemetry readings, anomalies, and DHT logs."""
+    global auto_shedding_enabled
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -121,8 +174,10 @@ def get_system_status():
         cursor.execute("SELECT id, name, relay_pin, status, last_updated FROM appliances")
         appliances = [dict(row) for row in cursor.fetchall()]
 
-        # Fetch latest sensor telemetry for each appliance
+        # Fetch latest sensor telemetry and run anomaly detection for each appliance
         telemetry = {}
+        anomaly_status = {}
+        total_power = 0.0
         for app in appliances:
             cursor.execute("""
                 SELECT current, power, voltage, timestamp 
@@ -132,21 +187,94 @@ def get_system_status():
             """, (app["name"],))
             row = cursor.fetchone()
             if row:
-                telemetry[app["name"]] = dict(row)
+                r_dict = dict(row)
+                telemetry[app["name"]] = r_dict
+                total_power += float(row["power"] or 0.0)
+                
+                # Check for anomalies
+                try:
+                    anomaly_status[app["name"]] = detect_anomaly(
+                        app["name"], 
+                        float(r_dict["current"]), 
+                        float(r_dict["power"]), 
+                        float(r_dict["voltage"])
+                    )
+                except Exception:
+                    anomaly_status[app["name"]] = None
             else:
                 telemetry[app["name"]] = {"current": 0.0, "power": 0.0, "voltage": 230.0, "timestamp": None}
+                anomaly_status[app["name"]] = None
 
         # Fetch latest DHT22 reading
         cursor.execute("SELECT temperature, humidity, timestamp FROM dht_data ORDER BY timestamp DESC LIMIT 1")
         dht_row = cursor.fetchone()
         dht = dict(dht_row) if dht_row else {"temperature": 0.0, "humidity": 0.0, "timestamp": None}
 
+        # Run GRU forecast to determine future load peaks
+        preemptive_warning = False
+        shed_triggered = False
+        shedded_appliance = None
+        predicted_max = total_power
+
+        try:
+            forecast_vals = run_forecast(total_power)
+            predicted_max = max(forecast_vals)
+            if predicted_max > 400.0:
+                preemptive_warning = True
+        except Exception:
+            pass
+
+        # Perform Preemptive Auto-Shedding if enabled and warning is active
+        if preemptive_warning and auto_shedding_enabled and total_power > 10.0:
+            # Non-essential shedding order: Fan, TV, Light
+            shed_priority = ["Fan", "TV", "Light"]
+            for target_app in shed_priority:
+                # Find if it is currently ON
+                app_entry = next((a for a in appliances if a["name"] == target_app), None)
+                if app_entry and app_entry["status"] == 1:
+                    # Switch OFF in database
+                    cursor.execute("""
+                        UPDATE appliances 
+                        SET status = 0, last_updated = CURRENT_TIMESTAMP 
+                        WHERE name = ?
+                    """, (target_app,))
+                    
+                    # Log to system journal
+                    log_msg = f"Preemptive Auto-Shedding Triggered: Turned OFF {target_app} to prevent predicted grid overload ({predicted_max:.2f} W > 400W)"
+                    cursor.execute(
+                        "INSERT INTO system_logs (level, message) VALUES (?, ?)",
+                        ("INFO", log_msg)
+                    )
+                    
+                    # Publish MQTT off command
+                    publish_mqtt_command(target_app, 0)
+                    
+                    shed_triggered = True
+                    shedded_appliance = target_app
+                    
+                    # Update local state immediately
+                    app_entry["status"] = 0
+                    app_entry["last_updated"] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    break
+
+        conn.commit()
         conn.close()
+
+        # Determine active power source based on 400W threshold
+        power_source = "Solar" if total_power > 400.0 else "Grid"
 
         return {
             "appliances": appliances,
             "latest_telemetry": telemetry,
-            "dht": dht
+            "anomaly_status": anomaly_status,
+            "dht": dht,
+            "total_power": round(total_power, 2),
+            "power_source": power_source,
+            "auto_shedding_enabled": auto_shedding_enabled,
+            "preemptive_warning": preemptive_warning,
+            "predicted_max_power": round(predicted_max, 2),
+            "shed_triggered": shed_triggered,
+            "shedded_appliance": shedded_appliance
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database query failure: {e}")
@@ -329,8 +457,8 @@ def get_system_logs(limit: int = Query(50, ge=1, le=200)):
 # Import ML forecaster modules safely
 try:
     from ml_forecaster import run_forecast
-except ImportError:
-    # Fallback to dummy generator if PyTorch package is missing in environment
+except Exception:
+    # Fallback to dummy generator if PyTorch package is missing or fails to load DLLs in environment
     def run_forecast(current_power_watts=300.0):
         import random
         return [round(current_power_watts * f, 2) for f in [1.1, 1.25, 0.9, 0.7]]

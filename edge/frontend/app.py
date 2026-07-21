@@ -17,12 +17,39 @@ st.set_page_config(
 # API Endpoint definition
 API_BASE_URL = st.sidebar.text_input("API Base URL", "http://localhost:8000")
 
+# Helper function to query the API
+def fetch_api_data(endpoint):
+    import requests
+    try:
+        response = requests.get(f"{API_BASE_URL}{endpoint}", timeout=2.5)
+        if response.status_code == 200:
+            return response.json()
+        return None
+    except Exception:
+        return None
+
+# Fetch status early to configure sidebar toggles
+status_data = fetch_api_data("/api/status")
+
 # Database absolute path (for display)
 DB_PATH = "/home/jetson/smartelectric/edge/backend/edge_iot.db"
 
 # Auto-refresh interval (seconds)
 st.sidebar.markdown("---")
 auto_refresh = st.sidebar.checkbox("Live Auto-Refresh (5s)", value=True)
+
+# Auto-Shedding toggle in sidebar
+auto_shedding = st.sidebar.checkbox(
+    "Preemptive Auto-Shedding", 
+    value=status_data.get("auto_shedding_enabled", False) if status_data else False,
+    help="Automatically shuts down non-essential loads if load is predicted to exceed 400W"
+)
+
+if status_data and auto_shedding != status_data.get("auto_shedding_enabled", False):
+    import requests
+    requests.post(f"{API_BASE_URL}/api/control/shedding", json={"enabled": auto_shedding})
+    st.rerun()
+
 if auto_refresh:
     # Use HTML meta refresh fallback to trigger Streamlit rerun safely every 5 seconds
     st.markdown(
@@ -33,11 +60,6 @@ if auto_refresh:
         """,
         unsafe_allow_html=True
     )
-    # Trigger Streamlit state rerun loop
-    # In newer Streamlit versions, we can use time.sleep + st.rerun() 
-    # but we should avoid blocking if the user interacts.
-    # To run smoothly, we use a simple header script or a manual refresh button.
-    # We will also add a manual refresh button just in case.
 
 # Custom styling for premium dark theme aesthetics
 st.markdown("""
@@ -160,18 +182,7 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# Helper function to query the API
-def fetch_api_data(endpoint):
-    try:
-        response = requests.get(f"{API_BASE_URL}{endpoint}", timeout=2.5)
-        if response.status_code == 200:
-            return response.json()
-        return None
-    except requests.exceptions.RequestException:
-        return None
-
-# Fetch data from API
-status_data = fetch_api_data("/api/status")
+# Fetch metrics from API
 metrics_data = fetch_api_data("/api/metrics?range_type=today")
 
 # Check API availability
@@ -184,9 +195,11 @@ else:
     appliances = status_data.get("appliances", [])
     telemetry = status_data.get("latest_telemetry", {})
     dht = status_data.get("dht", {})
+    anomaly_status = status_data.get("anomaly_status", {})
     
-    # Calculate aggregate totals
-    total_power = sum(item.get("power", 0.0) for item in telemetry.values())
+    # Parse power source metrics
+    power_source = status_data.get("power_source", "Grid")
+    total_power = float(status_data.get("total_power", 0.0))
     total_current = sum(item.get("current", 0.0) for item in telemetry.values())
     avg_voltage = 230.0 # Standard Grid Voltage
     
@@ -197,7 +210,25 @@ else:
         today_kwh = metrics_data.get("totals", {}).get("kwh", 0.0)
         today_cost = metrics_data.get("totals", {}).get("flat_cost_inr", 0.0)
 
-    # 1. Main KPI Cards Row
+    # Power Source Switch alert banner
+    if power_source == "Solar":
+        st.success(f"☀️ **Power Source: SOLAR GENERATION ACTIVE** — The total house load of **{total_power:.1f}W** has exceeded the **400W** threshold. Simulated solar power is currently feeding the circuits to safeguard the grid.")
+    else:
+        st.info(f"⚡ **Power Source: MAIN GRID ACTIVE** — The total house load of **{total_power:.1f}W** is within the safety threshold of **400W**.")
+
+    # Preemptive Auto-Shedding & Warning alerts
+    preemptive_warning = status_data.get("preemptive_warning", False)
+    predicted_max = status_data.get("predicted_max_power", 0.0)
+    shed_triggered = status_data.get("shed_triggered", False)
+    shedded_appliance = status_data.get("shedded_appliance", None)
+    
+    if preemptive_warning:
+        if status_data.get("auto_shedding_enabled", False):
+            if shed_triggered:
+                st.success(f"🛡️ **Preemptive Load Shedding Triggered:** Automatically turned OFF **{shedded_appliance}** to prevent predicted grid overload ({predicted_max:.1f}W > 400W).")
+        else:
+            st.warning(f"⚠️ **Preemptive Overload Warning:** Future demand is predicted to spike to **{predicted_max:.1f}W** in the next hour. Consider manually turning off heavy loads like TV or Fan to avoid grid switch.")
+
     col1, col2, col3, col4, col5 = st.columns(5)
     
     with col1:
@@ -311,10 +342,19 @@ else:
                 else f'<span class="badge badge-off">OFF</span>'
             )
             
+            # Retrieve anomaly status
+            anomaly_desc = anomaly_status.get(app_name)
+            safety_badge = (
+                f'<span class="badge" style="background-color:rgba(239,68,68,0.15); color:#f87171; border:1px solid rgba(239,68,68,0.3); font-size:0.75rem; font-weight:700;">⚠️ ANOMALY: {anomaly_desc}</span>'
+                if anomaly_desc
+                else '<span class="badge" style="background-color:rgba(16,185,129,0.15); color:#34d399; border:1px solid rgba(16,185,129,0.3); font-size:0.75rem; font-weight:700;">✔️ NORMAL</span>'
+            )
+            
             table_rows.append({
                 "Appliance": f"**{app_name}**",
                 "Relay Pin": f"GPIO {app['relay_pin']}",
                 "Status": status_badge,
+                "Safety Status": safety_badge,
                 "Current Load (W)": f"{power:.1f} W",
                 "Current (A)": f"{current:.2f} A"
             })
@@ -330,6 +370,64 @@ else:
             </div>
             <br>
         """, unsafe_allow_html=True)
+
+    st.markdown("---")
+
+    # 2.5. Solar Generation Forecast (ML-Based)
+    st.subheader("☀️ Solar Generation Forecast (Next 3 Hours)")
+    forecast_data = fetch_api_data("/api/solar/forecast")
+    if forecast_data and forecast_data.get("status") == "success":
+        forecast_vals = forecast_data.get("forecast", [])
+        
+        # Display as columns
+        f_col1, f_col2, f_col3 = st.columns(3)
+        with f_col1:
+            st.markdown(f"""
+                <div class="metric-card" style="padding: 12px 20px;">
+                    <div class="metric-label" style="font-size:0.75rem;">In 1 Hour</div>
+                    <div class="metric-val" style="font-size:1.6rem; color:#34d399;">{forecast_vals[0]:.1f}<span class="metric-unit">W</span></div>
+                </div>
+            """, unsafe_allow_html=True)
+        with f_col2:
+            st.markdown(f"""
+                <div class="metric-card" style="padding: 12px 20px;">
+                    <div class="metric-label" style="font-size:0.75rem;">In 2 Hours</div>
+                    <div class="metric-val" style="font-size:1.6rem; color:#34d399;">{forecast_vals[1]:.1f}<span class="metric-unit">W</span></div>
+                </div>
+            """, unsafe_allow_html=True)
+        with f_col3:
+            st.markdown(f"""
+                <div class="metric-card" style="padding: 12px 20px;">
+                    <div class="metric-label" style="font-size:0.75rem;">In 3 Hours</div>
+                    <div class="metric-val" style="font-size:1.6rem; color:#34d399;">{forecast_vals[2]:.1f}<span class="metric-unit">W</span></div>
+                </div>
+            """, unsafe_allow_html=True)
+            
+        st.markdown("<br>", unsafe_allow_html=True)
+        # Draw Line Chart
+        df_forecast = pd.DataFrame({
+            "Time Ahead": ["1 Hour", "2 Hours", "3 Hours"],
+            "Solar Forecast (W)": forecast_vals
+        })
+        fig_solar = px.line(
+            df_forecast,
+            x="Time Ahead",
+            y="Solar Forecast (W)",
+            markers=True,
+            template="plotly_dark"
+        )
+        fig_solar.update_traces(line_color="#34d399", marker=dict(size=8, color="#10b981"))
+        fig_solar.update_layout(
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)',
+            yaxis_gridcolor='rgba(255,255,255,0.05)',
+            xaxis_title="",
+            yaxis_title="Expected Output (Watts)",
+            margin=dict(l=20, r=20, t=10, b=10)
+        )
+        st.plotly_chart(fig_solar, use_container_width=True)
+    else:
+        st.info("Solar forecast unavailable. Ensure climate sensors are reporting data.")
 
     st.markdown("---")
 

@@ -12,8 +12,8 @@ extern const char* mqtt_server; // Defined in secrets.h / config.cpp if overridd
 // Relay Pin Mappings
 #define RELAY_LIGHT_PIN 18
 #define RELAY_TV_PIN    19
-#define RELAY_FRIDGE_PIN 26
-#define RELAY_FAN_PIN    27
+#define RELAY_FRIDGE_PIN 21
+#define RELAY_FAN_PIN    22
 
 // SCT-013 Current Sensor Analog Input Pins (ESP32 ADC pins)
 #define SENSOR_LIGHT_PIN 32
@@ -28,7 +28,7 @@ extern const char* mqtt_server; // Defined in secrets.h / config.cpp if overridd
 // SCT-013 Calibration Factor (Current Calibration value)
 // For 100A/50mA sensor with 20-ohm burden resistor on ESP32 (3.3V ADC limit)
 // Math: (100A / 0.05A) / BurdenResistor_20_ohms = 100
-#define SCT_CALIBRATION 60.6
+#define SCT_CALIBRATION 100.0
 
 // ADC Configuration for ESP32
 #define ADC_BITS 12
