@@ -13,6 +13,7 @@ PubSubClient mqttClient(espClient);
 
 // Timing variables
 unsigned long last_telemetry_time = 0;
+unsigned long last_mqtt_reconnect_time = 0;
 
 void setup_wifi() {
     delay(10);
@@ -82,9 +83,12 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
 }
 
 void reconnect_mqtt() {
-    // Loop until we're reconnected
-    while (!mqttClient.connected()) {
+    unsigned long current_time = millis();
+    // Only attempt to reconnect every 5 seconds to avoid blocking the main loop
+    if (current_time - last_mqtt_reconnect_time >= 5000) {
+        last_mqtt_reconnect_time = current_time;
         Serial.print("Attempting MQTT connection...");
+        
         // Create a unique client ID using ESP32 MAC address
         String clientId = "SmartElectric-ESP32-Client-";
         clientId += String(WiFi.macAddress());
@@ -112,9 +116,7 @@ void reconnect_mqtt() {
         } else {
             Serial.print("failed, rc=");
             Serial.print(mqttClient.state());
-            Serial.println(" try again in 5 seconds");
-            // Wait 5 seconds before retrying
-            delay(5000);
+            Serial.println(" will try again in 5 seconds");
         }
     }
 }
@@ -162,18 +164,22 @@ void loop() {
         double current_fan = readCurrentRMS(SENSOR_FAN_PIN);
 
         // Construct current telemetry JSON payload
-        StaticJsonDocument<256> currentDoc;
-        currentDoc["Light"] = current_light;
-        currentDoc["TV"] = current_tv;
-        currentDoc["Fridge"] = current_fridge;
-        currentDoc["Fan"] = current_fan;
+        StaticJsonDocument<512> currentDoc;
+        currentDoc["Light_Amps"] = current_light;
+        currentDoc["Light_Watts"] = current_light * GRID_VOLTAGE;
+        currentDoc["TV_Amps"] = current_tv;
+        currentDoc["TV_Watts"] = current_tv * GRID_VOLTAGE;
+        currentDoc["Fridge_Amps"] = current_fridge;
+        currentDoc["Fridge_Watts"] = current_fridge * GRID_VOLTAGE;
+        currentDoc["Fan_Amps"] = current_fan;
+        currentDoc["Fan_Watts"] = current_fan * GRID_VOLTAGE;
         currentDoc["voltage"] = GRID_VOLTAGE;
 
-        char currentBuffer[256];
+        char currentBuffer[512];
         serializeJson(currentDoc, currentBuffer);
         mqttClient.publish("smartelectric/sensors/current", currentBuffer);
 
-        // 2. Read DHT22 temperature and humidity values
+        // 2. Read BME280 temperature and humidity values
         float temperature = 0.0;
         float humidity = 0.0;
         bool bme_success = readBME280(temperature, humidity);

@@ -26,16 +26,46 @@ void initSensors() {
 
 double readCurrentRMS(int pin)
 {
-    int sample = analogRead(pin);
+    const int sampleCount = 400; 
+    double sum = 0.0;
+    double sumSq = 0.0;
 
-    Serial.print("Pin ");
-    Serial.print(pin);
-    Serial.print(" ADC = ");
-    Serial.println(sample);
+    // 1. Take rapid samples over ~100ms (covers exactly five 50Hz cycles or six 60Hz cycles)
+    for (int i = 0; i < sampleCount; i++) {
+        int sample = analogRead(pin);
+        
+        sum += sample;
+        sumSq += (double)sample * sample;
+        
+        // analogRead takes ~20us, + 230us delay = 250us per sample. 
+        // 400 samples * 250us = 100,000us (100ms)
+        delayMicroseconds(230); 
+    }
 
-    delay(500);
+    // 2. Calculate the Mean (this automatically finds the actual DC offset)
+    double mean = sum / sampleCount;
 
-    return 0.0;
+    // 3. Calculate Variance: Average(x^2) - Average(x)^2
+    double variance = (sumSq / sampleCount) - (mean * mean);
+    
+    // Prevent NaN from floating point inaccuracies on zero-current
+    if (variance < 0) variance = 0.0; 
+
+    // 4. Calculate RMS counts
+    double rmsCounts = sqrt(variance);
+
+    // 5. Convert to Voltage and then Amperes
+    double rmsVoltage = rmsCounts * (3.3 / ADC_COUNTS);
+    double currentAmps = rmsVoltage * SCT_CALIBRATION;
+
+    // 6. Noise filter / Deadband
+    if (currentAmps < 0.05) { 
+        currentAmps = 0.0;
+    }
+
+    Serial.printf("Pin %d RMS current = %.3f A (Midpoint was %.1f)\n", pin, currentAmps, mean);
+
+    return currentAmps;
 }
 
 bool readBME280(float &temperature, float &humidity) {

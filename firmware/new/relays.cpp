@@ -29,7 +29,7 @@ void initRelays() {
     for (int i = 0; i < 4; i++) {
         pinMode(relay_pins[i], OUTPUT);
         // Safety: ensure relays boot up in a de-energized/OFF state
-        digitalWrite(relay_pins[i], LOW);
+        digitalWrite(relay_pins[i], RELAY_INACTIVE_STATE);
         last_relay_toggle_ms[i] = 0;
     }
 }
@@ -50,7 +50,7 @@ bool setRelayStateByPin(int pin, int state) {
     }
 
     // Set state
-    digitalWrite(pin, (state == 1) ? HIGH : LOW);
+    digitalWrite(pin, (state == 1) ? RELAY_ACTIVE_STATE : RELAY_INACTIVE_STATE);
     
     // Update last toggle timestamp
     last_relay_toggle_ms[idx] = current_time;
