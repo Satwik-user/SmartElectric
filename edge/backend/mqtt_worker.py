@@ -76,10 +76,16 @@ def on_message(client, userdata, msg):
         if topic == TOPIC_CURRENT:
             # Expected payload format:
             # {"Light": 0.15, "TV": 0.40, "Fridge": 1.10, "Fan": 0.25, "voltage": 230.0}
+            # Or Satwik's new format:
+            # {"Light_Amps": 0.15, "TV_Amps": 0.40, ...}
             voltage = float(payload.get("voltage", 230.0))
             
-            for appliance, current_val in payload.items():
-                if appliance in VALID_APPLIANCES:
+            for appliance in VALID_APPLIANCES:
+                current_val = payload.get(appliance)
+                if current_val is None:
+                    current_val = payload.get(f"{appliance}_Amps")
+                
+                if current_val is not None:
                     current = float(current_val)
                     power = current * voltage
                     
