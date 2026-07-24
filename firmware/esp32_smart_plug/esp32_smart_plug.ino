@@ -179,32 +179,32 @@ void loop() {
         serializeJson(currentDoc, currentBuffer);
         mqttClient.publish("smartelectric/sensors/current", currentBuffer);
 
-        // 2. Read BME280 temperature and humidity values
+        // 2. Read BME280 temperature and humidity values, along with PIR and LDR
         float temperature = 0.0;
         float humidity = 0.0;
         bool bme_success = readBME280(temperature, humidity);
+        int pir_val = readPIR();
+        float ldr_val = readLDR();
 
         if (bme_success) {
-    StaticJsonDocument<128> bmeDoc;
-    bmeDoc["temperature"] = temperature;
-    bmeDoc["humidity"] = humidity;
-    bmeDoc["pressure"] = readPressure();
+            StaticJsonDocument<256> dhtDoc;
+            dhtDoc["temperature"] = temperature;
+            dhtDoc["humidity"] = humidity;
+            dhtDoc["pir"] = pir_val;
+            dhtDoc["ldr"] = ldr_val;
 
-    char bmeBuffer[128];
-    serializeJson(bmeDoc, bmeBuffer);
-    mqttClient.publish("smartelectric/sensors/bme280", bmeBuffer);
-
-} else {
-    StaticJsonDocument<128> errDoc;
-    errDoc["level"] = "WARNING";
-    errDoc["message"] = "BME280 read failure.";
-
-    char errBuffer[128];
-    serializeJson(errDoc, errBuffer);
-    mqttClient.publish("smartelectric/logs", errBuffer);
-
-    Serial.println("BME280 Sensor reading failed!");
-}
+            char dhtBuffer[256];
+            serializeJson(dhtDoc, dhtBuffer);
+            mqttClient.publish("smartelectric/sensors/dht", dhtBuffer);
+        } else {
+            StaticJsonDocument<128> errDoc;
+            errDoc["level"] = "WARNING";
+            errDoc["message"] = "BME280 sensor reading failed!";
+            char errBuffer[128];
+            serializeJson(errDoc, errBuffer);
+            mqttClient.publish("smartelectric/logs", errBuffer);
+            Serial.println("BME280 Sensor reading failed!");
+        }
         
         // Output debug to serial console
         Serial.printf("Telemetry Sent - Current (A) -> Light: %.3f, TV: %.3f, Fridge: %.3f, Fan: %.3f. DHT -> Temp: %.1f C, Hum: %.1f%%\n",

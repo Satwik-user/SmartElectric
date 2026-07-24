@@ -1037,6 +1037,47 @@
             background: var(--card-active);
             color: var(--text-white);
         }
+
+        /* AI Diagnostics Alert Styling */
+        .ai-recommendation-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 14px 18px;
+            border-radius: 10px;
+            font-size: 13.5px;
+            line-height: 1.5;
+            transition: transform 0.2s ease;
+        }
+        .ai-recommendation-item:hover {
+            transform: translateX(4px);
+        }
+        .ai-recommendation-item.info {
+            background: rgba(59, 130, 246, 0.06);
+            border: 1px solid rgba(59, 130, 246, 0.15);
+            color: #93c5fd;
+        }
+        .ai-recommendation-item.caution {
+            background: rgba(245, 158, 11, 0.06);
+            border: 1px solid rgba(245, 158, 11, 0.15);
+            color: #fde047;
+        }
+        .ai-recommendation-item.warning {
+            background: rgba(244, 63, 94, 0.06);
+            border: 1px solid rgba(244, 63, 94, 0.15);
+            color: #fda4af;
+        }
+        .ai-recommendation-icon {
+            font-size: 18px;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+        .ai-recommendation-text strong {
+            display: block;
+            font-weight: 700;
+            color: var(--text-white);
+            margin-bottom: 3px;
+        }
     </style>
 </head>
 <body>
@@ -1171,6 +1212,38 @@
                                 <span id="climate-hum" class="climate-value">0.0%</span>
                             </div>
                         </div>
+                        <!-- LDR Light card -->
+                        <div class="glass-card climate-mini-card ldr" style="margin-top: 12px; display: flex;">
+                            <div class="climate-icon" style="color: #fbbf24;"><i class="fa-solid fa-sun"></i></div>
+                            <div class="climate-info">
+                                <span class="climate-label">Room Light Level</span>
+                                <span id="climate-ldr" class="climate-value">0.0%</span>
+                            </div>
+                        </div>
+                        <!-- PIR Motion card -->
+                        <div class="glass-card climate-mini-card pir" style="margin-top: 12px; display: flex;">
+                            <div class="climate-icon" id="pir-icon" style="color: #a855f7;"><i class="fa-solid fa-person-rays"></i></div>
+                            <div class="climate-info">
+                                <span class="climate-label">Room Occupancy</span>
+                                <span id="climate-pir" class="climate-value">No Motion</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Efficiency Diagnostics Card -->
+                <div class="glass-card" id="ai-diagnostics-card" style="margin-top: 16px; padding: 24px; display: none;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                        <div class="section-header" style="margin-top: 0; margin-bottom: 0; font-size: 16px; font-weight: 700;">
+                            <i class="fa-solid fa-brain" style="color: #a855f7; font-size: 16px;"></i>
+                            AI Efficiency Diagnostics
+                        </div>
+                        <span class="status-chip active" style="background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.2); color: #c084fc; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px;">
+                            ACTIVE DIAGNOSIS
+                        </span>
+                    </div>
+                    <div id="ai-diagnostics-list" style="display: flex; flex-direction: column; gap: 12px;">
+                        <!-- AI Recommendations populated dynamically -->
                     </div>
                 </div>
 
@@ -1755,6 +1828,53 @@
 
                 document.getElementById('climate-temp').innerText = `${data.dht.temperature.toFixed(1)}°C`;
                 document.getElementById('climate-hum').innerText = `${data.dht.humidity.toFixed(1)}%`;
+
+                // Update LDR and PIR values
+                const ldrVal = data.dht.ldr !== undefined ? data.dht.ldr : 0.0;
+                const pirVal = data.dht.pir !== undefined ? data.dht.pir : 0;
+                
+                document.getElementById('climate-ldr').innerText = `${ldrVal.toFixed(1)}%`;
+                const pirEl = document.getElementById('climate-pir');
+                const pirIcon = document.getElementById('pir-icon');
+                if (pirEl && pirIcon) {
+                    if (pirVal === 1) {
+                        pirEl.innerText = 'Motion Detected';
+                        pirEl.style.color = '#c084fc';
+                        pirIcon.innerHTML = '<i class="fa-solid fa-person-walking"></i>';
+                    } else {
+                        pirEl.innerText = 'No Motion';
+                        pirEl.style.color = 'var(--text-secondary)';
+                        pirIcon.innerHTML = '<i class="fa-solid fa-person-rays"></i>';
+                    }
+                }
+
+                // Update AI Efficiency Diagnostics Card
+                const aiCard = document.getElementById('ai-diagnostics-card');
+                const aiList = document.getElementById('ai-diagnostics-list');
+                if (aiCard && aiList) {
+                    if (data.ai_recommendations && data.ai_recommendations.length > 0) {
+                        aiCard.style.display = 'block';
+                        aiList.innerHTML = data.ai_recommendations.map(rec => {
+                            let icon = 'fa-circle-info';
+                            let severityClass = rec.severity.toLowerCase();
+                            if (rec.severity === 'WARNING') icon = 'fa-triangle-exclamation';
+                            else if (rec.severity === 'CAUTION') icon = 'fa-circle-exclamation';
+                            
+                            return `
+                                <div class="ai-recommendation-item ${severityClass}">
+                                    <div class="ai-recommendation-icon"><i class="fa-solid ${icon}"></i></div>
+                                    <div class="ai-recommendation-text">
+                                        <strong>${rec.rule}</strong>
+                                        <p>${rec.message} <i style="color:var(--text-white); margin-left: 6px;">Recommendation: ${rec.recommendation}</i></p>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                    } else {
+                        aiCard.style.display = 'none';
+                        aiList.innerHTML = '';
+                    }
+                }
 
                 // Update views
                 if (currentTab === 'dashboard') {

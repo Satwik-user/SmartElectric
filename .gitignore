@@ -50,3 +50,5 @@ Desktop.ini
 
 # DB / Temp files
 sync_checkpoint.json
+*.db
+*.db-journal

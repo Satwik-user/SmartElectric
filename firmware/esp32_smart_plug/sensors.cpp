@@ -22,6 +22,9 @@ void initSensors() {
 
     // Set ADC attenuation (0–3.3V range)
     analogSetAttenuation(ADC_11db);
+
+    // Configure SENSOR_PIR_PIN as input
+    pinMode(SENSOR_PIR_PIN, INPUT);
 }
 
 double readCurrentRMS(int pin)
@@ -79,4 +82,15 @@ bool readBME280(float &temperature, float &humidity) {
 
 float readPressure() {
     return bme.readPressure() / 100.0F;
+}
+
+int readPIR() {
+    return digitalRead(SENSOR_PIR_PIN);
+}
+
+float readLDR() {
+    int val = analogRead(SENSOR_LDR_PIN);
+    // Convert 12-bit ADC reading (0-4095) to percentage (0% = Dark, 100% = Bright)
+    float pct = (float)val / 40.95;
+    return pct;
 }

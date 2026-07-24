@@ -10,7 +10,7 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from paho.mqtt import client as mqtt
 
-# Import ML anomaly and solar forecaster
+# Import ML anomaly, solar forecaster, and ONNX models
 try:
     from ml_anomaly import detect_anomaly
     from ml_solar_forecaster import predict_solar_forecast
@@ -20,6 +20,12 @@ except ImportError:
         return False
     def predict_solar_forecast(temp, hum, hour):
         return [100.0, 50.0, 0.0]
+
+try:
+    import ml_onnx
+except Exception as e:
+    print(f"Warning: Failed to import ml_onnx: {e}", file=sys.stderr)
+    ml_onnx = None
 
 # Global Auto-Shedding Flag
 auto_shedding_enabled = False
@@ -205,10 +211,25 @@ def get_system_status():
                 telemetry[app["name"]] = {"current": 0.0, "power": 0.0, "voltage": 230.0, "timestamp": None}
                 anomaly_status[app["name"]] = None
 
-        # Fetch latest DHT22 reading
-        cursor.execute("SELECT temperature, humidity, timestamp FROM dht_data ORDER BY timestamp DESC LIMIT 1")
+        # Fetch latest DHT22 reading (includes PIR and LDR now)
+        cursor.execute("SELECT temperature, humidity, pir, ldr, timestamp FROM dht_data ORDER BY timestamp DESC LIMIT 1")
         dht_row = cursor.fetchone()
-        dht = dict(dht_row) if dht_row else {"temperature": 0.0, "humidity": 0.0, "timestamp": None}
+        if dht_row:
+            dht = dict(dht_row)
+            dht["pir"] = dht.get("pir") if dht.get("pir") is not None else 0
+            dht["ldr"] = dht.get("ldr") if dht.get("ldr") is not None else 0.0
+        else:
+            dht = {"temperature": 0.0, "humidity": 0.0, "pir": 0, "ldr": 0.0, "timestamp": None}
+
+        # Query last 15 minutes of PIR readings to see if room is empty
+        # Telemetry is every 5 seconds, so 15 mins is 180 readings. We verify at least 15 readings exist.
+        fifteen_mins_ago = (datetime.now() - timedelta(minutes=15)).strftime('%Y-%m-%d %H:%M:%S')
+        cursor.execute("SELECT pir FROM dht_data WHERE timestamp >= ? AND pir IS NOT NULL", (fifteen_mins_ago,))
+        pir_rows = [row[0] for row in cursor.fetchall()]
+        
+        room_empty_15m = False
+        if len(pir_rows) >= 15 and all(p == 0 for p in pir_rows):
+            room_empty_15m = True
 
         # Run GRU forecast to determine future load peaks
         preemptive_warning = False
@@ -217,7 +238,10 @@ def get_system_status():
         predicted_max = total_power
 
         try:
-            forecast_vals = run_forecast(total_power)
+            if ml_onnx is not None:
+                forecast_vals = ml_onnx.run_forecast(total_power)
+            else:
+                forecast_vals = run_forecast(total_power)
             predicted_max = max(forecast_vals)
             if predicted_max > 400.0:
                 preemptive_warning = True
@@ -257,6 +281,84 @@ def get_system_status():
                     app_entry["last_updated"] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                     break
 
+        # AI Rules Engine & Efficiency Predictions
+        ai_recommendations = []
+        
+        # Rule 1: No motion + Light ON
+        light_power = telemetry.get("Light", {}).get("power", 0.0)
+        if dht["pir"] == 0 and light_power > 5.0:
+            ai_recommendations.append({
+                "rule": "No motion + Light ON",
+                "severity": "CAUTION",
+                "appliance": "Light",
+                "message": "Light is ON but no motion is detected in the room.",
+                "recommendation": "Turn OFF Light to save energy."
+            })
+            
+        # Rule 2: High temperature + Fan OFF
+        fan_power = telemetry.get("Fan", {}).get("power", 0.0)
+        if dht["temperature"] > 30.0 and fan_power < 2.0:
+            ai_recommendations.append({
+                "rule": "High temperature + Fan OFF",
+                "severity": "INFO",
+                "appliance": "Fan",
+                "message": f"Room temperature is high ({dht['temperature']:.1f}°C) but the Fan is OFF.",
+                "recommendation": "Recommend turning Fan ON for comfort."
+            })
+            
+        # Rule 3: TV drawing current at 3 AM
+        tv_power = telemetry.get("TV", {}).get("power", 0.0)
+        current_hour = datetime.now().hour
+        if current_hour in [0, 1, 2, 3, 4] and tv_power > 10.0:
+            ai_recommendations.append({
+                "rule": "TV active at night",
+                "severity": "WARNING",
+                "appliance": "TV",
+                "message": f"TV is active at {current_hour} AM.",
+                "recommendation": "Possible unnecessary overnight usage. Turn OFF TV."
+            })
+            
+        # Rule 4: Fridge current unusually high
+        fridge_power = telemetry.get("Fridge", {}).get("power", 0.0)
+        if fridge_power > 280.0:
+            ai_recommendations.append({
+                "rule": "Fridge high current",
+                "severity": "WARNING",
+                "appliance": "Fridge",
+                "message": f"Fridge power consumption is unusually high ({fridge_power:.1f} W).",
+                "recommendation": "Possible compressor fault or maintenance needed."
+            })
+            
+        # Rule 5: Room empty for 15 minutes
+        if room_empty_15m:
+            active_unnecessary = []
+            for app in ["Fan", "TV", "Light"]:
+                if telemetry.get(app, {}).get("power", 0.0) > 5.0:
+                    active_unnecessary.append(app)
+                    
+            if active_unnecessary:
+                ai_recommendations.append({
+                    "rule": "Room empty for 15 minutes",
+                    "severity": "CAUTION",
+                    "appliance": ", ".join(active_unnecessary),
+                    "message": f"Room has been empty for 15 minutes but {', '.join(active_unnecessary)} is/are still ON.",
+                    "recommendation": "Turn OFF all unnecessary appliances."
+                })
+                
+                # If Auto-Shedding is enabled, auto turn them off!
+                if auto_shedding_enabled:
+                    for app in active_unnecessary:
+                        cursor.execute("UPDATE appliances SET status = 0, last_updated = CURRENT_TIMESTAMP WHERE name = ?", (app,))
+                        publish_mqtt_command(app, 0)
+                        log_msg = f"Auto-Shedding: Turned OFF {app} because room was empty for 15 minutes."
+                        cursor.execute("INSERT INTO system_logs (level, message) VALUES (?, ?)", ("INFO", log_msg))
+                        
+                        # Update local state immediately
+                        app_entry = next((a for a in appliances if a["name"] == app), None)
+                        if app_entry:
+                            app_entry["status"] = 0
+                            app_entry["last_updated"] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
         conn.commit()
         conn.close()
 
@@ -274,7 +376,9 @@ def get_system_status():
             "preemptive_warning": preemptive_warning,
             "predicted_max_power": round(predicted_max, 2),
             "shed_triggered": shed_triggered,
-            "shedded_appliance": shedded_appliance
+            "shedded_appliance": shedded_appliance,
+            "room_empty_15m": room_empty_15m,
+            "ai_recommendations": ai_recommendations
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database query failure: {e}")
@@ -470,7 +574,11 @@ class PredictLoadRequest(BaseModel):
 def predict_future_load(req: PredictLoadRequest):
     """Predicts future active power curve (4 steps of 15-min intervals) using GRU."""
     try:
-        forecast = run_forecast(req.current_load)
+        if ml_onnx is not None:
+            forecast = ml_onnx.run_forecast(req.current_load)
+        else:
+            forecast = run_forecast(req.current_load)
+            
         timestamps = []
         now = datetime.now()
         for idx in range(1, 5):
@@ -489,40 +597,67 @@ def predict_future_load(req: PredictLoadRequest):
 def predict_decision(req: PredictLoadRequest):
     """Attributes peak appliance load and determines severity level classification."""
     try:
-        forecast = run_forecast(req.current_load)
-        max_forecast = max(forecast)
-        
-        # Determine classification category
-        if max_forecast > 400.0:
-            classification = "HIGH"
-            rec = "Power load is projected to spike above safety thresholds. Consider scheduling washing machines or heavy loads during off-peak hours."
-        elif max_forecast > 200.0:
-            classification = "NORMAL"
-            rec = "Optimal consumption pattern. Keep appliances running normally."
-        else:
-            classification = "LOW"
-            rec = "System load is low. Energy saving optimization is active."
+        if ml_onnx is not None:
+            decision = ml_onnx.run_decision()
             
-        # Determine top attributed appliance
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT appliance_name, MAX(power) 
-            FROM sensor_data 
-            WHERE timestamp >= ?
-            GROUP BY appliance_name
-        """, ((datetime.now() - timedelta(hours=2)).strftime('%Y-%m-%d %H:%M:%S'),))
-        row = cursor.fetchone()
-        conn.close()
-        
-        top_app = row["appliance_name"] if (row and row["appliance_name"]) else "Fridge"
-        
-        return {
-            "classification": classification,
-            "anomaly_score": round(min(max((max_forecast - 200.0) / 300.0, 0.0), 1.0), 2),
-            "top_attributed_appliance": top_app,
-            "recommendation": rec
-        }
+            # Sort attributions to find top appliance by hours
+            attributions = decision["attributions"]
+            top_app = max(attributions, key=attributions.get)
+            
+            load_class = decision["load_class"]
+            if load_class == "High":
+                rec = "Power load is projected to spike above safety thresholds. Consider scheduling washing machines or heavy loads during off-peak hours."
+                anomaly_score = 0.85
+            elif load_class == "Normal":
+                rec = "Optimal consumption pattern. Keep appliances running normally."
+                anomaly_score = 0.45
+            else:
+                rec = "System load is low. Energy saving optimization is active."
+                anomaly_score = 0.15
+                
+            return {
+                "classification": load_class.upper(),
+                "anomaly_score": anomaly_score,
+                "top_attributed_appliance": top_app,
+                "recommendation": rec,
+                "appliance_hours": attributions,
+                "optimization_flags": decision["optimization"]
+            }
+        else:
+            forecast = run_forecast(req.current_load)
+            max_forecast = max(forecast)
+            
+            # Determine classification category
+            if max_forecast > 400.0:
+                classification = "HIGH"
+                rec = "Power load is projected to spike above safety thresholds. Consider scheduling washing machines or heavy loads during off-peak hours."
+            elif max_forecast > 200.0:
+                classification = "NORMAL"
+                rec = "Optimal consumption pattern. Keep appliances running normally."
+            else:
+                classification = "LOW"
+                rec = "System load is low. Energy saving optimization is active."
+                
+            # Determine top attributed appliance
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT appliance_name, MAX(power) 
+                FROM sensor_data 
+                WHERE timestamp >= ?
+                GROUP BY appliance_name
+            """, ((datetime.now() - timedelta(hours=2)).strftime('%Y-%m-%d %H:%M:%S'),))
+            row = cursor.fetchone()
+            conn.close()
+            
+            top_app = row["appliance_name"] if (row and row["appliance_name"]) else "Fridge"
+            
+            return {
+                "classification": classification,
+                "anomaly_score": round(min(max((max_forecast - 200.0) / 300.0, 0.0), 1.0), 2),
+                "top_attributed_appliance": top_app,
+                "recommendation": rec
+            }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Decision classification failure: {e}")
 

@@ -98,14 +98,16 @@ def on_message(client, userdata, msg):
 
         elif topic == TOPIC_DHT:
             # Expected payload format:
-            # {"temperature": 27.5, "humidity": 65.2}
+            # {"temperature": 27.5, "humidity": 65.2, "pir": 1, "ldr": 82.5}
             temp = float(payload.get("temperature", 0.0))
             hum = float(payload.get("humidity", 0.0))
+            pir = int(payload.get("pir", 0))
+            ldr = float(payload.get("ldr", 0.0))
             
             cursor.execute("""
-                INSERT INTO dht_data (temperature, humidity, synced)
-                VALUES (?, ?, 0)
-            """, (temp, hum))
+                INSERT INTO dht_data (temperature, humidity, pir, ldr, synced)
+                VALUES (?, ?, ?, ?, 0)
+            """, (temp, hum, pir, ldr))
             conn.commit()
 
         elif topic == TOPIC_LOGS:

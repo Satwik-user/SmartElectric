@@ -62,10 +62,19 @@ def init_db():
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         temperature REAL NOT NULL, -- Celsius
         humidity REAL NOT NULL,    -- Percentage (%)
+        pir INTEGER DEFAULT 0,     -- Motion PIR state (0=No motion, 1=Motion)
+        ldr REAL DEFAULT 0.0,      -- Light level LDR (%)
         timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         synced INTEGER NOT NULL CHECK (synced IN (0, 1)) DEFAULT 0
     );
     """)
+
+    # Safely migrate existing tables if columns are missing
+    for col, col_type in [("pir", "INTEGER DEFAULT 0"), ("ldr", "REAL DEFAULT 0.0")]:
+        try:
+            cursor.execute(f"ALTER TABLE dht_data ADD COLUMN {col} {col_type}")
+        except sqlite3.OperationalError:
+            pass  # Column already exists
 
     # Create system logs table
     cursor.execute("""

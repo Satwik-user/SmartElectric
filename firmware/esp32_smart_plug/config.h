@@ -38,4 +38,8 @@ extern const char* mqtt_server; // Defined in secrets.h / config.cpp if overridd
 #define TELEMETRY_INTERVAL_MS 5000  // Send telemetry every 5 seconds
 #define SAFETY_LOCKOUT_MS     3000  // Prevent relay chattering (min 3 seconds between state changes)
 
+// PIR and LDR Sensor Pin Mappings
+#define SENSOR_PIR_PIN 4
+#define SENSOR_LDR_PIN 36
+
 #endif // CONFIG_H

@@ -41,13 +41,33 @@ def main():
             current_time = datetime.now()
             timestamp_str = current_time.strftime('%Y-%m-%d %H:%M:%S')
 
-            # 1. Generate and insert DHT sensor reading
+            # 1. Generate and insert DHT sensor reading (including PIR and LDR)
             temp = 26.0 + random.uniform(-1.0, 1.0)
             hum = 62.0 + random.uniform(-4.0, 4.0)
+            
+            # Generate LDR based on current hour
+            hour = current_time.hour
+            if 7 <= hour <= 17:
+                ldr = 80.0 + random.uniform(-5.0, 5.0)
+            elif hour == 6 or hour == 18:
+                ldr = 40.0 + random.uniform(-5.0, 5.0)
+            else:
+                ldr = 2.0 + random.uniform(-1.0, 1.0)
+                
+            # Model room occupancy (30 minute cycles: 10 minutes occupied, 20 minutes empty)
+            # 10 minutes = 120 cycles; 20 minutes = 240 cycles
+            cycle_phase = cycle_count % 360
+            if cycle_phase < 120:
+                # Occupied: motion is detected occasionally (40% chance)
+                pir = 1 if random.random() < 0.4 else 0
+            else:
+                # Empty: strictly 0 motion
+                pir = 0
+
             cursor.execute("""
-                INSERT INTO dht_data (temperature, humidity, timestamp, synced)
-                VALUES (?, ?, ?, 0)
-            """, (temp, hum, timestamp_str))
+                INSERT INTO dht_data (temperature, humidity, pir, ldr, timestamp, synced)
+                VALUES (?, ?, ?, ?, ?, 0)
+            """, (temp, hum, pir, ldr, timestamp_str))
 
             # 2. Generate and insert sensor data for each appliance
             total_simulated_power = 0.0
@@ -131,7 +151,7 @@ def main():
             conn.commit()
             conn.close()
 
-            print(f"[{timestamp_str}] Inserted real-time telemetry (Temp: {temp:.1f}°C, Hum: {hum:.1f}%)")
+            print(f"[{timestamp_str}] Inserted real-time telemetry (Temp: {temp:.1f}°C, Hum: {hum:.1f}%, PIR: {pir}, LDR: {ldr:.1f}%)")
 
         except Exception as e:
             print(f"Error in simulator: {e}", file=sys.stderr)

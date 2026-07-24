@@ -31,4 +31,16 @@ bool readBME280(float &temperature, float &humidity);
  */
 float readPressure();
 
+/**
+ * @brief Reads the state of the PIR motion sensor.
+ * @return int 1 if motion is detected, 0 otherwise.
+ */
+int readPIR();
+
+/**
+ * @brief Reads the light level from the LDR sensor.
+ * @return float Light level percentage (0% to 100%).
+ */
+float readLDR();
+
 #endif // SENSORS_H
