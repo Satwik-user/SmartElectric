@@ -14,7 +14,7 @@ MQTT_KEEPALIVE = 60
 
 # Define MQTT subscription topics
 TOPIC_CURRENT = "smartelectric/sensors/current"
-TOPIC_DHT = "smartelectric/sensors/dht"
+TOPIC_BME280 = "smartelectric/sensors/bme280"
 TOPIC_LOGS = "smartelectric/logs"
 
 # List of known appliances for validation
@@ -49,9 +49,9 @@ def on_connect(client, userdata, flags, reason_code, properties=None):
         
         # Subscribe to topics
         client.subscribe(TOPIC_CURRENT)
-        client.subscribe(TOPIC_DHT)
+        client.subscribe(TOPIC_BME280)
         client.subscribe(TOPIC_LOGS)
-        print(f"Subscribed to topics:\n - {TOPIC_CURRENT}\n - {TOPIC_DHT}\n - {TOPIC_LOGS}")
+        print(f"Subscribed to topics:\n - {TOPIC_CURRENT}\n - {TOPIC_BME280}\n - {TOPIC_LOGS}")
     else:
         print(f"Failed to connect to MQTT broker. Reason code: {rc}")
         log_system_event("ERROR", f"Failed to connect to MQTT broker. Reason code: {rc}")
@@ -75,19 +75,18 @@ def on_message(client, userdata, msg):
 
         if topic == TOPIC_CURRENT:
             # Expected payload format:
-            # {"Light": 0.15, "TV": 0.40, "Fridge": 1.10, "Fan": 0.25, "voltage": 230.0}
+            # {"Light_Amps": 0.15, "Light_Watts": 34.5, "TV_Amps": ..., "voltage": 230.0}
             # Or Satwik's new format:
             # {"Light_Amps": 0.15, "TV_Amps": 0.40, ...}
             voltage = float(payload.get("voltage", 230.0))
             
             for appliance in VALID_APPLIANCES:
-                current_val = payload.get(appliance)
-                if current_val is None:
-                    current_val = payload.get(f"{appliance}_Amps")
+                amps_key = f"{appliance}_Amps"
+                watts_key = f"{appliance}_Watts"
                 
-                if current_val is not None:
-                    current = float(current_val)
-                    power = current * voltage
+                if amps_key in payload:
+                    current = float(payload[amps_key])
+                    power = float(payload.get(watts_key, current * voltage))
                     
                     cursor.execute("""
                         INSERT INTO sensor_data (appliance_name, current, power, voltage, synced)
@@ -96,9 +95,9 @@ def on_message(client, userdata, msg):
             
             conn.commit()
 
-        elif topic == TOPIC_DHT:
+        elif topic == TOPIC_BME280:
             # Expected payload format:
-            # {"temperature": 27.5, "humidity": 65.2, "pir": 1, "ldr": 82.5}
+            # {"temperature": 27.5, "humidity": 65.2, "pir": 1, "ldr": 82.5, "pressure": 1013.25}
             temp = float(payload.get("temperature", 0.0))
             hum = float(payload.get("humidity", 0.0))
             pir = int(payload.get("pir", 0))
