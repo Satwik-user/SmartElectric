@@ -33,6 +33,7 @@ wheels/
 .coverage
 htmlcov/
 .ipynb_checkpoints/
+venv/
 
 # IDE / Editor-specific
 .vscode/
