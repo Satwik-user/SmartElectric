@@ -1078,6 +1078,128 @@
             color: var(--text-white);
             margin-bottom: 3px;
         }
+
+        /* AI Grid & Forecasting Tab Styling */
+        .ai-kpi-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 22px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .ai-kpi-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(168, 85, 247, 0.4);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35), 0 0 15px rgba(168, 85, 247, 0.15);
+        }
+        .ai-kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-color), #a855f7);
+            opacity: 0.8;
+        }
+        .ai-kpi-card.severity-normal::before { background: linear-gradient(90deg, #10b981, #34d399); }
+        .ai-kpi-card.severity-warning::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+        .ai-kpi-card.severity-high::before { background: linear-gradient(90deg, #ef4444, #f87171); }
+
+        .ai-kpi-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .ai-kpi-value {
+            font-family: 'Outfit', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-white);
+            margin: 4px 0;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .ai-attribution-bar-bg {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .ai-attribution-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #a855f7);
+            border-radius: 4px;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .ai-opt-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11.5px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .ai-opt-pill.active {
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #34d399;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.15);
+        }
+        .ai-opt-pill.inactive {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-muted);
+        }
+        .ai-sim-control {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .ai-slider-container {
+            flex: 1;
+            min-width: 260px;
+        }
+        .ai-slider {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        .ai-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #a855f7;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(168, 85, 247, 0.6);
+            transition: transform 0.15s ease;
+        }
+        .ai-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
     </style>
 </head>
 <body>
@@ -1101,6 +1223,9 @@
                 </li>
                 <li class="nav-item" onclick="switchTab('analytics')">
                     <i class="fa-solid fa-chart-line"></i> Analytics & Cost
+                </li>
+                <li class="nav-item" onclick="switchTab('ai-forecast')">
+                    <i class="fa-solid fa-brain"></i> AI Grid & Forecasting
                 </li>
                 <li class="nav-item" onclick="switchTab('logs')">
                     <i class="fa-solid fa-terminal"></i> Gateway Logs
@@ -1256,6 +1381,26 @@
                     <!-- Cards populated dynamically by JS -->
                 </div>
 
+                <!-- AI Grid Decision Summary Widget on Dashboard -->
+                <div class="glass-card" style="margin-top: 24px; padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; border-left: 4px solid #a855f7; background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(15, 23, 42, 0.7) 100%);">
+                    <div style="display: flex; align-items: center; gap: 18px;">
+                        <div style="width: 48px; height: 48px; border-radius: 14px; background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.3); display: flex; align-items: center; justify-content: center; font-size: 22px; color: #c084fc; box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);">
+                            <i class="fa-solid fa-brain"></i>
+                        </div>
+                        <div>
+                            <div style="font-size: 15px; font-weight: 700; color: var(--text-white); display: flex; align-items: center; gap: 8px;">
+                                AI Grid Decision Engine: <span id="dash-ai-severity" style="color: #34d399;">NORMAL</span>
+                            </div>
+                            <div style="font-size: 12.5px; color: var(--text-secondary); margin-top: 4px;">
+                                Primary Load Driver: <strong id="dash-ai-top-app" style="color: #f8fafc;">Scanning...</strong> | Risk Score: <strong id="dash-ai-score" style="color: #38bdf8;">0%</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="range-btn active" style="background: rgba(168, 85, 247, 0.25); border: 1px solid rgba(168, 85, 247, 0.5); color: #d8b4fe; padding: 10px 18px; font-size: 12.5px; border-radius: 10px; display: flex; align-items: center; gap: 8px;" onclick="switchTab('ai-forecast')">
+                        View 1-Hour Forecast & Attribution <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+
                 <div class="section-header" style="margin-top: 32px;">
                     <i class="fa-solid fa-sun" style="color: var(--accent-color); font-size: 16px;"></i>
                     Solar Generation Forecast (Next 3 Hours)
@@ -1408,6 +1553,122 @@
                 </div>
             </div>
 
+            <!-- 5. AI FORECAST & DECISION VIEW -->
+            <div id="tab-ai-forecast" class="tab-view">
+                <div class="section-header" style="justify-content: space-between; display: flex; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fa-solid fa-brain" style="color: #a855f7; font-size: 18px;"></i>
+                        AI Neural Energy Forecasting & Decision Engine
+                    </div>
+                    <span class="status-chip active" style="background: rgba(168, 85, 247, 0.12); border: 1px solid rgba(168, 85, 247, 0.3); color: #d8b4fe; font-size: 11px; padding: 4px 12px; border-radius: 6px; letter-spacing: 0.5px;">
+                        ONNX & GRU MODELS ONLINE
+                    </span>
+                </div>
+
+                <!-- Simulation & Mode Control Bar -->
+                <div class="ai-sim-control">
+                    <div style="display: flex; align-items: center; gap: 14px;">
+                        <label class="switch" style="transform: scale(0.9);">
+                            <input type="checkbox" id="ai-sim-toggle" onchange="toggleAiSimulation(this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                        <div>
+                            <div style="font-size: 13.5px; font-weight: 700; color: var(--text-white);">Simulate Grid Load Override</div>
+                            <div style="font-size: 11.5px; color: var(--text-secondary);">Toggle to manually test neural network stress responses</div>
+                        </div>
+                    </div>
+                    <div class="ai-slider-container" id="ai-slider-wrap" style="opacity: 0.4; pointer-events: none; transition: opacity 0.3s ease;">
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px;">
+                            <span style="color: var(--text-secondary);">Input Load: <strong id="ai-slider-val-text" style="color: #c084fc; font-size: 14px;">250 W</strong></span>
+                            <span style="color: var(--text-muted); font-size: 11px;">0W — 1200W</span>
+                        </div>
+                        <input type="range" id="ai-load-slider" class="ai-slider" min="0" max="1200" step="10" value="250" oninput="onAiSliderChange(this.value)">
+                    </div>
+                    <button class="range-btn active" style="background: linear-gradient(135deg, #a855f7, #6366f1); border: none; padding: 10px 18px; font-size: 12.5px; display: flex; align-items: center; gap: 8px; border-radius: 10px; box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3);" onclick="triggerAiInference()">
+                        <i class="fa-solid fa-rotate"></i> Run Inference Now
+                    </button>
+                </div>
+
+                <!-- Top 3 KPI Cards -->
+                <div class="kpi-grid" style="grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 24px;">
+                    <div class="ai-kpi-card" id="ai-kpi-severity-card">
+                        <div class="ai-kpi-title"><i class="fa-solid fa-shield-halved" style="color: #34d399;"></i> GRID LOAD SEVERITY STATE</div>
+                        <div class="ai-kpi-value" id="ai-kpi-severity-val" style="color: #34d399;">NORMAL</div>
+                        <div style="font-size: 12px; color: var(--text-secondary); margin-top: 6px;" id="ai-kpi-severity-sub">Optimal grid capacity within safety margins</div>
+                    </div>
+                    <div class="ai-kpi-card" id="ai-kpi-anomaly-card">
+                        <div class="ai-kpi-title"><i class="fa-solid fa-chart-pie" style="color: #38bdf8;"></i> ANOMALY PROBABILITY SCORE</div>
+                        <div class="ai-kpi-value" id="ai-kpi-anomaly-val" style="color: #38bdf8;">0%</div>
+                        <div style="font-size: 12px; color: var(--text-secondary); margin-top: 6px;" id="ai-kpi-anomaly-sub">Calculated stress risk factor</div>
+                    </div>
+                    <div class="ai-kpi-card" id="ai-kpi-top-card">
+                        <div class="ai-kpi-title"><i class="fa-solid fa-bolt" style="color: #f472b6;"></i> TOP ATTRIBUTED LOAD</div>
+                        <div class="ai-kpi-value" id="ai-kpi-top-val" style="color: #f472b6;">--</div>
+                        <div style="font-size: 12px; color: var(--text-secondary); margin-top: 6px;" id="ai-kpi-top-sub">Primary peak demand driver</div>
+                    </div>
+                </div>
+
+                <!-- Middle: 1-Hour Forecast Chart -->
+                <div class="glass-card" style="padding: 24px; margin-bottom: 24px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <div style="font-size: 16px; font-weight: 700; color: var(--text-white); display: flex; align-items: center; gap: 10px;">
+                            <i class="fa-solid fa-chart-area" style="color: #3b82f6;"></i>
+                            Projected Active Power Curve (1-Hour Horizon)
+                        </div>
+                        <span style="font-size: 12px; color: var(--text-secondary); background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
+                            Model: <strong style="color: #c084fc;">GRU / ONNX Forecaster</strong>
+                        </span>
+                    </div>
+                    <div id="ai-forecast-chart" style="height: 280px;"></div>
+                </div>
+
+                <!-- Bottom Row: Attribution Breakdown & Strategic Recommendations -->
+                <div style="display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 24px;">
+                    <!-- Appliance Attribution Hours -->
+                    <div class="glass-card" style="padding: 24px;">
+                        <div style="font-size: 16px; font-weight: 700; color: var(--text-white); margin-bottom: 6px; display: flex; align-items: center; gap: 10px;">
+                            <i class="fa-solid fa-plug-circle-bolt" style="color: #a855f7;"></i>
+                            Predicted Appliance Attribution Profile (24h)
+                        </div>
+                        <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 18px;">
+                            Model 2 multi-task attribution estimating daily runtime hours and relative energy contribution per appliance.
+                        </p>
+                        <div id="ai-attribution-list" style="display: flex; flex-direction: column; gap: 14px;">
+                            <!-- Populated dynamically by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Recommendations & Optimization Flags -->
+                    <div class="glass-card" style="padding: 24px; display: flex; flex-direction: column; justify-content: space-between;">
+                        <div>
+                            <div style="font-size: 16px; font-weight: 700; color: var(--text-white); margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
+                                <i class="fa-solid fa-lightbulb" style="color: #fbbf24;"></i>
+                                Strategic AI Scheduling Advisory
+                            </div>
+                            <div style="background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 12px; padding: 18px; margin-bottom: 22px;">
+                                <div style="display: flex; gap: 12px; align-items: flex-start;">
+                                    <i class="fa-solid fa-quote-left" style="color: #c084fc; font-size: 20px; margin-top: 2px;"></i>
+                                    <p id="ai-strategic-rec" style="font-size: 14px; line-height: 1.6; color: #f8fafc; font-style: italic; margin: 0;">
+                                        Analyzing consumption curves for scheduling recommendations...
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div style="font-size: 12.5px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;">
+                                Active Optimization Flags
+                            </div>
+                            <div id="ai-opt-flags-wrap" style="display: flex; flex-wrap: wrap; gap: 10px;">
+                                <span class="ai-opt-pill inactive" id="opt-flag-shedding"><i class="fa-solid fa-shield"></i> Load Shedding</span>
+                                <span class="ai-opt-pill inactive" id="opt-flag-scheduling"><i class="fa-solid fa-clock"></i> Smart Scheduling</span>
+                                <span class="ai-opt-pill inactive" id="opt-flag-warning"><i class="fa-solid fa-triangle-exclamation"></i> High Power Warning</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Diagnostics footer -->
             <div class="diag-grid">
                 <div class="diag-box">
@@ -1444,6 +1705,9 @@
         let activeRange = 'today';
         let apexChartInstance = null;
         let solarChartInstance = null;
+        let aiForecastChartInstance = null;
+        let isAiSimulated = false;
+        let aiSimulatedWatts = 250.0;
         let lastToggleTime = {}; // Cooldown tracking (appliance -> timestamp)
 
         // Automatically resolve API Base URL
@@ -1470,7 +1734,8 @@
                 'dashboard': 0,
                 'control': 1,
                 'analytics': 2,
-                'logs': 3
+                'ai-forecast': 3,
+                'logs': 4
             };
             const navItems = document.querySelectorAll('.nav-item');
             if (navItems[navIndexMap[tabName]]) {
@@ -1876,6 +2141,9 @@
                     }
                 }
 
+                // Always fetch AI predictions in background for dashboard widgets & AI tab
+                fetchAiPredictions(data.total_power);
+
                 // Update views
                 if (currentTab === 'dashboard') {
                     updateDashboardGrid(data);
@@ -1887,6 +2155,8 @@
                     fetchHistory();
                 } else if (currentTab === 'logs') {
                     fetchLogs();
+                } else if (currentTab === 'ai-forecast') {
+                    triggerAiInference();
                 }
 
             } catch (e) {
@@ -1979,6 +2249,224 @@
             if (chartEl) {
                 solarChartInstance = new ApexCharts(chartEl, options);
                 solarChartInstance.render();
+            }
+        }
+
+        // Initialize ApexCharts for AI 1-Hour Horizon Forecaster
+        function initAiForecastChart() {
+            const chartEl = document.getElementById("ai-forecast-chart");
+            if (!chartEl) return;
+            const options = {
+                series: [{
+                    name: 'Projected Load (W)',
+                    data: []
+                }],
+                chart: {
+                    type: 'area',
+                    height: 280,
+                    background: 'transparent',
+                    foreColor: '#94a3b8',
+                    toolbar: { show: false },
+                    animations: { enabled: true, easing: 'easeinout', speed: 800 }
+                },
+                colors: ['#8b5cf6'],
+                fill: {
+                    type: 'gradient',
+                    gradient: {
+                        shadeIntensity: 1,
+                        opacityFrom: 0.65,
+                        opacityTo: 0.05,
+                        stops: [0, 90, 100]
+                    }
+                },
+                dataLabels: { enabled: false },
+                stroke: { curve: 'smooth', width: 3 },
+                xaxis: {
+                    categories: ['+15 min', '+30 min', '+45 min', '+60 min'],
+                    axisBorder: { show: false },
+                    axisTicks: { show: false },
+                    labels: { style: { colors: '#94a3b8', fontFamily: 'JetBrains Mono, monospace' } }
+                },
+                yaxis: {
+                    labels: { 
+                        formatter: val => `${Math.round(val)} W`,
+                        style: { colors: '#94a3b8', fontFamily: 'JetBrains Mono, monospace' }
+                    },
+                    grid: { borderColor: 'rgba(255,255,255,0.05)' }
+                },
+                grid: { borderColor: 'rgba(255,255,255,0.06)' },
+                tooltip: {
+                    theme: 'dark',
+                    y: { formatter: val => `${val.toFixed(1)} Watts` }
+                }
+            };
+            aiForecastChartInstance = new ApexCharts(chartEl, options);
+            aiForecastChartInstance.render();
+        }
+
+        function toggleAiSimulation(enabled) {
+            isAiSimulated = enabled;
+            const wrap = document.getElementById('ai-slider-wrap');
+            if (wrap) {
+                wrap.style.opacity = enabled ? '1' : '0.4';
+                wrap.style.pointerEvents = enabled ? 'auto' : 'none';
+            }
+            triggerAiInference();
+        }
+
+        function onAiSliderChange(val) {
+            aiSimulatedWatts = parseFloat(val);
+            const textEl = document.getElementById('ai-slider-val-text');
+            if (textEl) textEl.innerText = `${aiSimulatedWatts} W`;
+            triggerAiInference();
+        }
+
+        async function triggerAiInference() {
+            let inputWatts = aiSimulatedWatts;
+            if (!isAiSimulated) {
+                const totalEl = document.getElementById('total-power');
+                if (totalEl && totalEl.innerText) {
+                    const parsed = parseFloat(totalEl.innerText.replace(' W', ''));
+                    if (!isNaN(parsed) && parsed > 0) inputWatts = parsed;
+                }
+            }
+            await fetchAiPredictions(inputWatts);
+        }
+
+        async function fetchAiPredictions(currentWatts) {
+            const apiBase = getApiUrl();
+            try {
+                // 1. Fetch Load Forecast (GRU Model 1)
+                const loadRes = await fetch(`${apiBase}/api/v1/predict/load`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ current_load: currentWatts })
+                });
+                if (loadRes.ok) {
+                    const loadData = await loadRes.json();
+                    if (aiForecastChartInstance && loadData.forecasted_power_watts) {
+                        const times = loadData.forecasted_timestamps ? loadData.forecasted_timestamps.map(t => {
+                            const pts = t.split(' ');
+                            return pts.length > 1 ? pts[1].slice(0, 5) : t;
+                        }) : ['+15m', '+30m', '+45m', '+60m'];
+                        aiForecastChartInstance.updateOptions({ xaxis: { categories: times } });
+                        aiForecastChartInstance.updateSeries([{
+                            name: 'Projected Load (W)',
+                            data: loadData.forecasted_power_watts
+                        }]);
+                    }
+                }
+
+                // 2. Fetch Decision & Attribution (ONNX Model 2)
+                const decRes = await fetch(`${apiBase}/api/v1/predict/decision`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ current_load: currentWatts })
+                });
+                if (decRes.ok) {
+                    const decData = await decRes.json();
+                    const severity = decData.classification || 'NORMAL';
+                    const topApp = decData.top_attributed_appliance || 'None';
+                    const scorePct = Math.round((decData.anomaly_score || 0) * 100);
+
+                    // Update Dashboard Summary Widget
+                    const dashSev = document.getElementById('dash-ai-severity');
+                    const dashTop = document.getElementById('dash-ai-top-app');
+                    const dashScore = document.getElementById('dash-ai-score');
+                    if (dashSev) {
+                        dashSev.innerText = severity;
+                        dashSev.style.color = severity === 'HIGH' ? '#ef4444' : (severity === 'WARNING' ? '#f59e0b' : '#34d399');
+                    }
+                    if (dashTop) dashTop.innerText = topApp;
+                    if (dashScore) {
+                        dashScore.innerText = `${scorePct}%`;
+                        dashScore.style.color = scorePct > 70 ? '#ef4444' : (scorePct > 40 ? '#f59e0b' : '#38bdf8');
+                    }
+
+                    // Update AI Tab Severity Card
+                    const sevVal = document.getElementById('ai-kpi-severity-val');
+                    const sevCard = document.getElementById('ai-kpi-severity-card');
+                    const sevSub = document.getElementById('ai-kpi-severity-sub');
+                    if (sevVal) {
+                        sevVal.innerText = severity;
+                        if (sevCard) sevCard.className = `ai-kpi-card severity-${severity.toLowerCase()}`;
+                        if (severity === 'HIGH') {
+                            sevVal.style.color = '#ef4444';
+                            if (sevSub) sevSub.innerText = '⚠️ CRITICAL: Exceeded safe capacity threshold';
+                        } else if (severity === 'WARNING' || (severity === 'NORMAL' && currentWatts > 300)) {
+                            sevVal.style.color = '#f59e0b';
+                            if (sevSub) sevSub.innerText = '⚡ Caution: Approaching peak grid capacity';
+                        } else {
+                            sevVal.style.color = '#34d399';
+                            if (sevSub) sevSub.innerText = 'Optimal grid capacity within safety margins';
+                        }
+                    }
+
+                    // Update AI Tab Anomaly Score Card
+                    const anomVal = document.getElementById('ai-kpi-anomaly-val');
+                    if (anomVal) {
+                        anomVal.innerText = `${scorePct}%`;
+                        anomVal.style.color = scorePct > 70 ? '#ef4444' : (scorePct > 40 ? '#f59e0b' : '#38bdf8');
+                    }
+
+                    // Update AI Tab Top Attributed Card
+                    const topVal = document.getElementById('ai-kpi-top-val');
+                    if (topVal) topVal.innerText = topApp;
+
+                    // Update Strategic Advisory Box
+                    const recEl = document.getElementById('ai-strategic-rec');
+                    if (recEl) {
+                        recEl.innerText = decData.recommendation || 'Optimal consumption pattern. Keep appliances running normally.';
+                    }
+
+                    // Update Appliance Attribution List
+                    const attrList = document.getElementById('ai-attribution-list');
+                    if (attrList) {
+                        const hoursMap = decData.appliance_hours || {
+                            'Refrigerator': 20.0, 'AirConditioner': 12.5, 'Fan': 15.0, 'Television': 8.0
+                        };
+                        const iconMap = {
+                            'Refrigerator': 'fa-snowflake', 'Fridge': 'fa-snowflake',
+                            'AirConditioner': 'fa-wind', 'AC': 'fa-wind',
+                            'Fan': 'fa-fan',
+                            'Television': 'fa-tv', 'TV': 'fa-tv',
+                            'Monitor': 'fa-desktop',
+                            'MotorPump': 'fa-water', 'Light': 'fa-lightbulb'
+                        };
+                        attrList.innerHTML = Object.entries(hoursMap).map(([app, hrs]) => {
+                            const pct = Math.min(100, Math.max(0, (hrs / 24.0) * 100)).toFixed(0);
+                            const icon = iconMap[app] || 'fa-plug';
+                            return `
+                                <div>
+                                    <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; color: var(--text-white); font-weight: 600;">
+                                        <span style="display: flex; align-items: center; gap: 8px;">
+                                            <i class="fa-solid ${icon}" style="color: #a855f7; width: 16px;"></i> ${app}
+                                        </span>
+                                        <span>${Number(hrs).toFixed(1)} hrs/day <small style="color: var(--text-muted); font-weight: 400;">(${pct}%)</small></span>
+                                    </div>
+                                    <div class="ai-attribution-bar-bg">
+                                        <div class="ai-attribution-bar-fill" style="width: ${pct}%;"></div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                    }
+
+                    // Update Optimization Pills
+                    const optMap = decData.optimization_flags || {
+                        'LoadShedding': severity === 'HIGH',
+                        'SmartScheduling': true,
+                        'HighPowerWarning': severity === 'HIGH' || scorePct > 60
+                    };
+                    const sheddingEl = document.getElementById('opt-flag-shedding');
+                    const schedEl = document.getElementById('opt-flag-scheduling');
+                    const warnEl = document.getElementById('opt-flag-warning');
+                    if (sheddingEl) sheddingEl.className = `ai-opt-pill ${optMap.LoadShedding ? 'active' : 'inactive'}`;
+                    if (schedEl) schedEl.className = `ai-opt-pill ${optMap.SmartScheduling ? 'active' : 'inactive'}`;
+                    if (warnEl) warnEl.className = `ai-opt-pill ${optMap.HighPowerWarning ? 'active' : 'inactive'}`;
+                }
+            } catch (e) {
+                console.error("AI Predictions Fetch Error:", e);
             }
         }
 
@@ -2082,6 +2570,7 @@
         window.addEventListener('load', () => {
             initChart();
             initSolarChart();
+            initAiForecastChart();
             switchTab('dashboard');
             
             // Loop polling
