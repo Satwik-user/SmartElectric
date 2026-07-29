@@ -11,10 +11,10 @@
 // Instantiate network clients
 #if USE_HIVEMQ_CLOUD
 WiFiClientSecure espClient;
-const char* target_mqtt_server = HIVEMQ_SERVER_HOST;
+const char* target_mqtt_server = MQTT_SERVER_IP;
 #else
 WiFiClient espClient;
-const char* target_mqtt_server = LOCAL_MQTT_SERVER_IP;
+const char* target_mqtt_server = MQTT_SERVER_IP;
 #endif
 
 PubSubClient mqttClient(espClient);
@@ -148,7 +148,7 @@ void setup() {
     setup_wifi();
 
     #if USE_HIVEMQ_CLOUD
-    espClient.setInsecure(); // Skip certificate verification for rapid hardware testing
+    espClient.setCACert(HIVEMQ_CA_CERT); // Apply Let's Encrypt ISRG Root X1 CA for HiveMQ Cloud TLS
     #endif
 
     // Configure MQTT Broker settings

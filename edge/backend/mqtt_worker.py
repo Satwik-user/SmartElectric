@@ -5,6 +5,12 @@ import sqlite3
 from datetime import datetime
 from paho.mqtt import client as mqtt
 
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 # Import DB configurations
 from edge_db import get_db_connection, DB_PATH
 
