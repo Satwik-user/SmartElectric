@@ -173,11 +173,11 @@ void loop() {
     if (current_time - last_telemetry_time >= TELEMETRY_INTERVAL_MS) {
         last_telemetry_time = current_time;
 
-        // 1. Read SCT-013 current values (Gated by relay state to eliminate OFF phantom readings)
-        double current_light  = (getRelayState(RELAY_LIGHT_PIN)  == 1) ? readCurrentRMS(SENSOR_LIGHT_PIN)  * LIGHT_SCALE_FACTOR  : 0.0;
-        double current_tv     = (getRelayState(RELAY_TV_PIN)     == 1) ? readCurrentRMS(SENSOR_TV_PIN)     * TV_SCALE_FACTOR     : 0.0;
-        double current_fridge = (getRelayState(RELAY_FRIDGE_PIN) == 1) ? readCurrentRMS(SENSOR_FRIDGE_PIN) * FRIDGE_SCALE_FACTOR : 0.0;
-        double current_fan    = (getRelayState(RELAY_FAN_PIN)    == 1) ? readCurrentRMS(SENSOR_FAN_PIN)    * FAN_SCALE_FACTOR    : 0.0;
+        // 1. Read SCT-013 current values directly from physical sensors
+        double current_light  = readCurrentRMS(SENSOR_LIGHT_PIN)  * LIGHT_SCALE_FACTOR;
+        double current_tv     = readCurrentRMS(SENSOR_TV_PIN)     * TV_SCALE_FACTOR;
+        double current_fridge = readCurrentRMS(SENSOR_FRIDGE_PIN) * FRIDGE_SCALE_FACTOR;
+        double current_fan    = readCurrentRMS(SENSOR_FAN_PIN)    * FAN_SCALE_FACTOR;
 
         // Construct current telemetry JSON payload
         StaticJsonDocument<512> currentDoc;

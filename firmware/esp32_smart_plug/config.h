@@ -40,7 +40,7 @@ extern const char* mqtt_server; // Defined in secrets.h / config.cpp if overridd
 #define SCT_CALIBRATION 60.6
 
 // Noise Floor Threshold (RMS Amps below this threshold are forced to 0.0 to eliminate ADC noise)
-#define CURRENT_NOISE_FLOOR_AMPS 0.03
+#define CURRENT_NOISE_FLOOR_AMPS 0.015
 
 // Demo Bulb Scaling Factors (Maps physical demo bulb current to realistic appliance profiles)
 // e.g. FRIDGE_SCALE_FACTOR 2.2 converts a 100W test bulb (~0.43A) to a realistic 220W fridge load
