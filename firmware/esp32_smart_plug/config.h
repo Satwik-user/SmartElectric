@@ -14,9 +14,16 @@
 
 extern const char* mqtt_server; // Defined in secrets.h / config.cpp if overridden
 
-// Relay State Definitions (Change INACTIVE to HIGH if using Active-LOW relays)
+// Relay State Definitions (Set RELAY_ACTIVE_LOW to 1 for standard Active-LOW 4-channel relay boards)
+#define RELAY_ACTIVE_LOW 1
+
+#if RELAY_ACTIVE_LOW
+#define RELAY_ACTIVE_STATE LOW
+#define RELAY_INACTIVE_STATE HIGH
+#else
 #define RELAY_ACTIVE_STATE HIGH
 #define RELAY_INACTIVE_STATE LOW
+#endif
 
 // Relay Pin Mappings
 #define RELAY_LIGHT_PIN 18
