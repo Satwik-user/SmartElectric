@@ -1,6 +1,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include <Arduino.h>
+
 // Toggle between 1 for HiveMQ Cloud TLS (Port 8883) and 0 for Local Mosquitto (Port 1883)
 #define USE_HIVEMQ_CLOUD 1
 
