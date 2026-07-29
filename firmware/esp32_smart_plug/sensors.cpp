@@ -61,8 +61,10 @@ double readCurrentRMS(int pin)
     double rmsVoltage = rmsCounts * (3.3 / ADC_COUNTS);
     double currentAmps = rmsVoltage * SCT_CALIBRATION;
 
-    // Removed the noise filter entirely to allow reading the tiny 0.5W bulbs (0.002 Amps)
-    // NOTE: You may see small phantom currents (e.g., 0.010A) when all appliances are off due to natural ADC noise.
+    // Apply Noise Floor Threshold Cutoff to eliminate phantom readings from ESP32 ADC jitter
+    if (currentAmps < CURRENT_NOISE_FLOOR_AMPS) {
+        currentAmps = 0.0;
+    }
 
     Serial.printf("Pin %d RMS current = %.3f A (Midpoint was %.1f)\n", pin, currentAmps, mean);
 
