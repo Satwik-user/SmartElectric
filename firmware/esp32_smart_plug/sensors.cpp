@@ -61,12 +61,14 @@ double readCurrentRMS(int pin)
     double rmsVoltage = rmsCounts * (3.3 / ADC_COUNTS);
     double currentAmps = rmsVoltage * SCT_CALIBRATION;
 
+    double rawAmps = currentAmps;
+
     // Apply Noise Floor Threshold Cutoff to eliminate phantom readings from ESP32 ADC jitter
     if (currentAmps < CURRENT_NOISE_FLOOR_AMPS) {
         currentAmps = 0.0;
     }
 
-    Serial.printf("Pin %d RMS current = %.3f A (Midpoint was %.1f)\n", pin, currentAmps, mean);
+    Serial.printf("Pin %d -> Raw Measured: %.4f A, Final Output: %.3f A (ADC Midpoint: %.1f)\n", pin, rawAmps, currentAmps, mean);
 
     return currentAmps;
 }
