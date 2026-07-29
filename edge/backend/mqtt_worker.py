@@ -64,6 +64,8 @@ def on_message(client, userdata, msg):
     payload_str = msg.payload.decode('utf-8', errors='ignore')
     topic = msg.topic
 
+    print(f"Broker sent us massage on {topic}: {payload_str}")
+
     try:
         payload = json.loads(payload_str)
     except json.JSONDecodeError as e:
@@ -95,6 +97,8 @@ def on_message(client, userdata, msg):
                         INSERT INTO sensor_data (appliance_name, current, power, voltage, synced)
                         VALUES (?, ?, ?, ?, 0)
                     """, (appliance, current, power, voltage))
+
+                    print(f"Successfully inserted {appliance} into database!")
             
             conn.commit()
 

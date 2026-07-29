@@ -571,9 +571,15 @@ def get_system_logs(limit: int = Query(50, ge=1, le=200)):
 
 # Import ML forecaster modules safely
 try:
+<<<<<<< Updated upstream
     from ml.ml_forecaster import run_forecast
 except ImportError:
     # Fallback to dummy generator if PyTorch package is missing or fails to load DLLs in environment
+=======
+    from ml_forecaster import run_forecast
+except Exception as e:
+    # Fallback to dummy generator if PyTorch package is missing in environment
+>>>>>>> Stashed changes
     def run_forecast(current_power_watts=300.0):
         import random
         return [round(current_power_watts * f, 2) for f in [1.1, 1.25, 0.9, 0.7]]
