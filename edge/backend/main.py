@@ -80,7 +80,7 @@ class ApplianceResponse(BaseModel):
     last_updated: str
 
 def publish_mqtt_command(appliance: str, state: int):
-    """Connects to the MQTT broker (local or HiveMQ Cloud), publishes a relay command, and disconnects without blocking."""
+    """Connects to the MQTT broker (local or HiveMQ Cloud), publishes a relay command, and disconnects reliably."""
     def run_publish():
         try:
             if hasattr(mqtt, "CallbackAPIVersion"):
@@ -95,16 +95,20 @@ def publish_mqtt_command(appliance: str, state: int):
                 import ssl
                 client.tls_set(cert_reqs=ssl.CERT_NONE, tls_version=ssl.PROTOCOL_TLSv1_2)
 
-            # Connect with a short keepalive to fail fast if broker is down
-            client.connect(MQTT_BROKER, MQTT_PORT, 5)
+            client.connect(MQTT_BROKER, MQTT_PORT, 10)
+            client.loop_start()
             
             # Topic payload structure matching the ESP32 expectations
             payload = {
                 "appliance": appliance,
                 "state": state
             }
-            client.publish("smartelectric/control/relay", json.dumps(payload), qos=1)
+            pub_info = client.publish("smartelectric/control/relay", json.dumps(payload), qos=1)
+            pub_info.wait_for_publish(timeout=3.0)
+            
+            client.loop_stop()
             client.disconnect()
+            print(f"Successfully published MQTT command to HiveMQ: {appliance} -> {state}")
         except Exception as e:
             print(f"Non-blocking MQTT Publish failed: {e}", file=sys.stderr)
 
