@@ -7,9 +7,10 @@ import numpy as np
 import onnxruntime as ort
 
 # Paths
-BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
+ML_DIR = os.path.dirname(os.path.abspath(__file__))
+BACKEND_DIR = os.path.dirname(ML_DIR)
 DB_PATH = os.path.join(BACKEND_DIR, "edge_iot.db")
-MODELS_DIR = os.path.join(BACKEND_DIR, "trained_models")
+MODELS_DIR = os.path.join(ML_DIR, "trained_models")
 
 MODEL1_PATH = os.path.join(MODELS_DIR, "model1_forecaster.onnx")
 MODEL2_PATH = os.path.join(MODELS_DIR, "model2_decision.onnx")
@@ -296,12 +297,48 @@ def run_decision():
         
         # Denormalize hours using appliance scaler min/max
         app_names = ["Fan", "Refrigerator", "AirConditioner", "Television", "Monitor", "MotorPump"]
-        attributions = {}
+        raw_attributions = {}
         for idx, app in enumerate(app_names):
             min_val = float(app_scaler.data_min_[idx])
             max_val = float(app_scaler.data_max_[idx])
             hours = float(attr_vals[idx]) * (max_val - min_val) + min_val
-            attributions[app] = round(max(0.0, hours), 2)
+            raw_attributions[app] = round(max(0.0, hours), 2)
+            
+        # --- APPLIANCE MASKING & MAPPING LAYER ---
+        # Map neural network labels to our system's actual hardware labels
+        name_map = {
+            "Television": "TV",
+            "Refrigerator": "Refrigerator",
+            "Fan": "Fan",
+            "AirConditioner": "AC",
+            "Monitor": "Monitor",
+            "MotorPump": "Pump"
+        }
+        
+        attributions = {}
+        # Fetch physically connected appliances from the database
+        connected_apps = set(["TV", "Refrigerator", "Fan", "Light"]) # Default fallbacks
+        if os.path.exists(DB_PATH):
+            try:
+                conn = sqlite3.connect(DB_PATH)
+                cursor = conn.cursor()
+                cursor.execute("SELECT DISTINCT appliance_name FROM sensor_data")
+                rows = cursor.fetchall()
+                if rows:
+                    connected_apps = {row[0] for row in rows}
+                conn.close()
+            except Exception:
+                pass
+                
+        for model_name, hours in raw_attributions.items():
+            system_name = name_map.get(model_name, model_name)
+            # Only keep the prediction if the appliance actually exists in the real hardware setup!
+            if system_name in connected_apps:
+                attributions[system_name] = hours
+                
+        # If no appliances matched (e.g., completely different names), fallback to returning everything
+        if not attributions:
+            attributions = {name_map.get(k, k): v for k, v in raw_attributions.items()}
             
         # 3. Unpack optimization actions (LoadShedding, SmartScheduling, HighPowerWarning)
         opt_start = unpack["optimization"]["start"]

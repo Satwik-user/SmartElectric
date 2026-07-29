@@ -12,8 +12,8 @@ from paho.mqtt import client as mqtt
 
 # Import ML anomaly, solar forecaster, and ONNX models
 try:
-    from ml_anomaly import detect_anomaly
-    from ml_solar_forecaster import predict_solar_forecast
+    from ml.ml_anomaly import detect_anomaly
+    from ml.ml_solar_forecaster import predict_solar_forecast
 except ImportError:
     # Dummy fallbacks
     def detect_anomaly(app_name, current, power, voltage):
@@ -21,10 +21,11 @@ except ImportError:
     def predict_solar_forecast(temp, hum, hour):
         return [100.0, 50.0, 0.0]
 
+# Import Machine Learning Models
 try:
-    import ml_onnx
-except Exception as e:
-    print(f"Warning: Failed to import ml_onnx: {e}", file=sys.stderr)
+    from ml import ml_onnx
+except ImportError as e:
+    print(f"Warning: Failed to load ONNX models. Starting without AI capabilities. ({e})")
     ml_onnx = None
 
 # Global Auto-Shedding Flag
@@ -560,8 +561,8 @@ def get_system_logs(limit: int = Query(50, ge=1, le=200)):
 
 # Import ML forecaster modules safely
 try:
-    from ml_forecaster import run_forecast
-except Exception:
+    from ml.ml_forecaster import run_forecast
+except ImportError:
     # Fallback to dummy generator if PyTorch package is missing or fails to load DLLs in environment
     def run_forecast(current_power_watts=300.0):
         import random
