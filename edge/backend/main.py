@@ -57,6 +57,9 @@ app.add_middleware(
 # MQTT Broker Details
 MQTT_BROKER = os.getenv("MQTT_BROKER", "localhost")
 MQTT_PORT = int(os.getenv("MQTT_PORT", 1883))
+MQTT_USER = os.getenv("MQTT_USER", "")
+MQTT_PASS = os.getenv("MQTT_PASS", "")
+MQTT_USE_TLS = os.getenv("MQTT_USE_TLS", "false").lower() in ("true", "1", "yes")
 
 # Pydantic schemas for requests
 class RelayControlRequest(BaseModel):
@@ -71,13 +74,20 @@ class ApplianceResponse(BaseModel):
     last_updated: str
 
 def publish_mqtt_command(appliance: str, state: int):
-    """Connects to the local MQTT broker, publishes a relay command, and disconnects without blocking."""
+    """Connects to the MQTT broker (local or HiveMQ Cloud), publishes a relay command, and disconnects without blocking."""
     def run_publish():
         try:
             if hasattr(mqtt, "CallbackAPIVersion"):
                 client = mqtt.Client(callback_api_version=mqtt.CallbackAPIVersion.VERSION2)
             else:
                 client = mqtt.Client()
+
+            if MQTT_USER and MQTT_PASS:
+                client.username_pw_set(MQTT_USER, MQTT_PASS)
+
+            if MQTT_USE_TLS or MQTT_PORT == 8883:
+                import ssl
+                client.tls_set(cert_reqs=ssl.CERT_NONE, tls_version=ssl.PROTOCOL_TLSv1_2)
 
             # Connect with a short keepalive to fail fast if broker is down
             client.connect(MQTT_BROKER, MQTT_PORT, 5)

@@ -1,8 +1,15 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-// Network configurations
+// Toggle between 1 for HiveMQ Cloud TLS (Port 8883) and 0 for Local Mosquitto (Port 1883)
+#define USE_HIVEMQ_CLOUD 1
+
+#if USE_HIVEMQ_CLOUD
+#define MQTT_PORT 8883
+#else
 #define MQTT_PORT 1883
+#endif
+
 extern const char* mqtt_server; // Defined in secrets.h / config.cpp if overridden
 
 // Relay State Definitions (Change INACTIVE to HIGH if using Active-LOW relays)

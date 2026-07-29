@@ -10,6 +10,9 @@ from edge_db import get_db_connection, DB_PATH
 
 MQTT_BROKER = os.getenv("MQTT_BROKER", "localhost")
 MQTT_PORT = int(os.getenv("MQTT_PORT", 1883))
+MQTT_USER = os.getenv("MQTT_USER", "")
+MQTT_PASS = os.getenv("MQTT_PASS", "")
+MQTT_USE_TLS = os.getenv("MQTT_USE_TLS", "false").lower() in ("true", "1", "yes")
 MQTT_KEEPALIVE = 60
 
 # Define MQTT subscription topics
@@ -153,6 +156,15 @@ def main():
     client.on_connect = on_connect
     client.on_message = on_message
     client.on_disconnect = on_disconnect
+
+    # Configure authentication if credentials are provided
+    if MQTT_USER and MQTT_PASS:
+        client.username_pw_set(MQTT_USER, MQTT_PASS)
+
+    # Configure TLS/SSL if port is 8883 or MQTT_USE_TLS is True
+    if MQTT_USE_TLS or MQTT_PORT == 8883:
+        import ssl
+        client.tls_set(cert_reqs=ssl.CERT_NONE, tls_version=ssl.PROTOCOL_TLSv1_2)
 
     # Connect to the broker
     try:

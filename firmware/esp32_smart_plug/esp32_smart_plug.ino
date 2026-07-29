@@ -1,4 +1,5 @@
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 
@@ -8,7 +9,14 @@
 #include "relays.h"
 
 // Instantiate network clients
+#if USE_HIVEMQ_CLOUD
+WiFiClientSecure espClient;
+const char* target_mqtt_server = HIVEMQ_SERVER_HOST;
+#else
 WiFiClient espClient;
+const char* target_mqtt_server = LOCAL_MQTT_SERVER_IP;
+#endif
+
 PubSubClient mqttClient(espClient);
 
 // Timing variables
@@ -87,7 +95,11 @@ void reconnect_mqtt() {
     // Only attempt to reconnect every 5 seconds to avoid blocking the main loop
     if (current_time - last_mqtt_reconnect_time >= 5000) {
         last_mqtt_reconnect_time = current_time;
-        Serial.print("Attempting MQTT connection...");
+        Serial.print("Attempting MQTT connection to ");
+        Serial.print(target_mqtt_server);
+        Serial.print(":");
+        Serial.print(MQTT_PORT);
+        Serial.print("...");
         
         // Create a unique client ID using ESP32 MAC address
         String clientId = "SmartElectric-ESP32-Client-";
@@ -135,8 +147,12 @@ void setup() {
     // Configure WiFi connection
     setup_wifi();
 
+    #if USE_HIVEMQ_CLOUD
+    espClient.setInsecure(); // Skip certificate verification for rapid hardware testing
+    #endif
+
     // Configure MQTT Broker settings
-    mqttClient.setServer(MQTT_SERVER_IP, MQTT_PORT);
+    mqttClient.setServer(target_mqtt_server, MQTT_PORT);
     mqttClient.setCallback(mqtt_callback);
 }
 
