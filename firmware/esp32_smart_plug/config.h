@@ -1,6 +1,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include <Arduino.h>
+
 // Toggle between 1 for HiveMQ Cloud TLS (Port 8883) and 0 for Local Mosquitto (Port 1883)
 #define USE_HIVEMQ_CLOUD 1
 
@@ -36,6 +38,16 @@ extern const char* mqtt_server; // Defined in secrets.h / config.cpp if overridd
 // For 100A/50mA sensor with 33-ohm burden resistor on ESP32 (3.3V ADC limit)
 // Math: (100A / 0.05A) / BurdenResistor_33_ohms = 60.6
 #define SCT_CALIBRATION 60.6
+
+// Noise Floor Threshold (RMS Amps below this threshold are forced to 0.0 to eliminate ADC noise)
+#define CURRENT_NOISE_FLOOR_AMPS 0.015
+
+// Demo Bulb Scaling Factors (Maps physical demo bulb current to realistic appliance profiles)
+// e.g. FRIDGE_SCALE_FACTOR 2.2 converts a 100W test bulb (~0.43A) to a realistic 220W fridge load
+#define LIGHT_SCALE_FACTOR  1.0
+#define TV_SCALE_FACTOR     1.0
+#define FRIDGE_SCALE_FACTOR 2.2
+#define FAN_SCALE_FACTOR    1.0
 
 // ADC Configuration for ESP32
 #define ADC_BITS 12

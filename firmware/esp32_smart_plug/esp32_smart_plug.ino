@@ -11,10 +11,10 @@
 // Instantiate network clients
 #if USE_HIVEMQ_CLOUD
 WiFiClientSecure espClient;
-const char* target_mqtt_server = HIVEMQ_SERVER_HOST;
+const char* target_mqtt_server = MQTT_SERVER_IP;
 #else
 WiFiClient espClient;
-const char* target_mqtt_server = LOCAL_MQTT_SERVER_IP;
+const char* target_mqtt_server = MQTT_SERVER_IP;
 #endif
 
 PubSubClient mqttClient(espClient);
@@ -148,7 +148,7 @@ void setup() {
     setup_wifi();
 
     #if USE_HIVEMQ_CLOUD
-    espClient.setInsecure(); // Skip certificate verification for rapid hardware testing
+    espClient.setCACert(HIVEMQ_CA_CERT); // Apply Let's Encrypt ISRG Root X1 CA for HiveMQ Cloud TLS
     #endif
 
     // Configure MQTT Broker settings
@@ -173,11 +173,11 @@ void loop() {
     if (current_time - last_telemetry_time >= TELEMETRY_INTERVAL_MS) {
         last_telemetry_time = current_time;
 
-        // 1. Read SCT-013 current values
-        double current_light = readCurrentRMS(SENSOR_LIGHT_PIN);
-        double current_tv = readCurrentRMS(SENSOR_TV_PIN);
-        double current_fridge = readCurrentRMS(SENSOR_FRIDGE_PIN);
-        double current_fan = readCurrentRMS(SENSOR_FAN_PIN);
+        // 1. Read SCT-013 current values directly from physical sensors
+        double current_light  = readCurrentRMS(SENSOR_LIGHT_PIN)  * LIGHT_SCALE_FACTOR;
+        double current_tv     = readCurrentRMS(SENSOR_TV_PIN)     * TV_SCALE_FACTOR;
+        double current_fridge = readCurrentRMS(SENSOR_FRIDGE_PIN) * FRIDGE_SCALE_FACTOR;
+        double current_fan    = readCurrentRMS(SENSOR_FAN_PIN)    * FAN_SCALE_FACTOR;
 
         // Construct current telemetry JSON payload
         StaticJsonDocument<512> currentDoc;

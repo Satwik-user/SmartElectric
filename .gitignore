@@ -49,6 +49,10 @@ ehthumbs.db
 Desktop.ini
 .DS_Store
 
+# Environment & Secret files
+.env
+*.env
+
 # DB / Temp files
 sync_checkpoint.json
 *.db
