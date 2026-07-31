@@ -6,7 +6,7 @@ set -e
 
 echo "=== SmartElectric: Starting Background Services ==="
 
-services=("smartelectric-worker.service" "smartelectric-api.service" "smartelectric-dashboard.service")
+services=("smartelectric-worker.service" "smartelectric-api.service")
 
 for service in "${services[@]}"; do
     echo "Starting $service..."

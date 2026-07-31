@@ -5,7 +5,7 @@
 echo "=== SmartElectric: System Services Status ==="
 echo "------------------------------------------------"
 
-services=("smartelectric-worker.service" "smartelectric-api.service" "smartelectric-dashboard.service")
+services=("smartelectric-worker.service" "smartelectric-api.service")
 
 for service in "${services[@]}"; do
     if systemctl is-active --quiet "$service"; then

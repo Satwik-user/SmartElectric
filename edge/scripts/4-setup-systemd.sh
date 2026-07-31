@@ -19,7 +19,7 @@ if [ ! -d "$SYSTEMD_DIR" ]; then
     exit 1
 fi
 
-services=("smartelectric-worker.service" "smartelectric-api.service" "smartelectric-dashboard.service")
+services=("smartelectric-worker.service" "smartelectric-api.service")
 
 for service in "${services[@]}"; do
     echo "Configuring and registering $service..."

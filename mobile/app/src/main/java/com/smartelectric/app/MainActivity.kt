@@ -67,10 +67,10 @@ fun MainAppScreen(context: Context) {
         Screen.Settings
     )
 
-    // Load API gateway IP from SharedPreferences (Defaults to 192.168.1.100)
+    // Load API gateway IP from SharedPreferences (Defaults to 192.168.0.39)
     val sharedPref = context.getSharedPreferences("SmartElectricPrefs", Context.MODE_PRIVATE)
     var gatewayIp by remember { 
-        mutableStateOf(sharedPref.getString("gateway_ip", "192.168.1.100") ?: "192.168.1.100") 
+        mutableStateOf(sharedPref.getString("gateway_ip", "192.168.0.39") ?: "192.168.0.39") 
     }
 
     Scaffold(
