@@ -8,6 +8,7 @@ Type=simple
 User=jetson
 WorkingDirectory=/home/jetson/smartelectric/edge/backend
 Environment=PYTHONUNBUFFERED=1
+Environment=OPENBLAS_CORETYPE=ARMV8
 ExecStart=/home/jetson/smartelectric/edge/backend/venv/bin/python /home/jetson/smartelectric/edge/backend/mqtt_worker.py
 Restart=always
 RestartSec=5
