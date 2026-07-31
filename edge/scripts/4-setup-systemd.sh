@@ -13,6 +13,10 @@ echo "Detected Project Root: $PROJECT_ROOT"
 SYSTEMD_DIR="$PROJECT_ROOT/edge/systemd"
 TARGET_DIR="/etc/systemd/system"
 
+# Detect the actual user who owns the project folder (to avoid hardcoding 'jetson')
+ACTUAL_USER=$(stat -c '%U' "$PROJECT_ROOT")
+echo "Detected Service User: $ACTUAL_USER"
+
 # Ensure systemd folder exists in our package
 if [ ! -d "$SYSTEMD_DIR" ]; then
     echo "Error: Systemd templates not found at $SYSTEMD_DIR"
@@ -25,8 +29,8 @@ for service in "${services[@]}"; do
     echo "Configuring and registering $service..."
     
     # Read service content, replace '/home/jetson/smartelectric' with actual PROJECT_ROOT path,
-    # and write directly to /etc/systemd/system/
-    sed "s|/home/jetson/smartelectric|$PROJECT_ROOT|g" "$SYSTEMD_DIR/$service" | sudo tee "$TARGET_DIR/$service" > /dev/null
+    # replace 'User=jetson' with the actual user, and write directly to /etc/systemd/system/
+    sed "s|/home/jetson/smartelectric|$PROJECT_ROOT|g; s|User=jetson|User=$ACTUAL_USER|g" "$SYSTEMD_DIR/$service" | sudo tee "$TARGET_DIR/$service" > /dev/null
     
     # Reload and enable the service
     sudo systemctl enable "$service"
