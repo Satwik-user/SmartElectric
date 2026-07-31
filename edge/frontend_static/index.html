@@ -1712,7 +1712,7 @@
 
         // Automatically resolve API Base URL
         const hostname = window.location.hostname;
-        const defaultApiBase = hostname ? `http://${hostname}:8000` : 'http://localhost:8000';
+        const defaultApiBase = hostname ? `http://${hostname}` : 'http://localhost';
         document.getElementById('api-endpoint').value = defaultApiBase;
 
         function getApiUrl() {
