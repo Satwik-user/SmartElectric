@@ -141,6 +141,17 @@ void setup() {
     // Initialize relays first (safety: force low state immediately)
     initRelays();
 
+    // Hardware Relay Self-Test: Cycle each relay for 300ms on boot for instant physical verification
+    Serial.println("Running Relay Hardware Self-Test...");
+    const char* testAppliances[] = {"Light", "TV", "Fridge", "Fan"};
+    for (int i = 0; i < 4; i++) {
+        setRelayState(testAppliances[i], 1);
+        delay(300);
+        setRelayState(testAppliances[i], 0);
+        delay(100);
+    }
+    Serial.println("Relay Self-Test Complete!");
+
     // Initialize sensors
     initSensors();
 
