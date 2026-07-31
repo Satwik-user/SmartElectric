@@ -14,11 +14,11 @@ except ImportError:
 # Import DB configurations
 from edge_db import get_db_connection, DB_PATH
 
-MQTT_BROKER = os.getenv("MQTT_BROKER", "localhost")
-MQTT_PORT = int(os.getenv("MQTT_PORT", 1883))
-MQTT_USER = os.getenv("MQTT_USER", "")
-MQTT_PASS = os.getenv("MQTT_PASS", "")
-MQTT_USE_TLS = os.getenv("MQTT_USE_TLS", "false").lower() in ("true", "1", "yes")
+MQTT_BROKER = os.getenv("MQTT_BROKER", "265aefae9e544fb5bddce420a89fb4b3.s1.eu.hivemq.cloud")
+MQTT_PORT = int(os.getenv("MQTT_PORT", 8883))
+MQTT_USER = os.getenv("MQTT_USER", "SmartElectric")
+MQTT_PASS = os.getenv("MQTT_PASS", "rassp123#")
+MQTT_USE_TLS = os.getenv("MQTT_USE_TLS", "true").lower() in ("true", "1", "yes")
 MQTT_KEEPALIVE = 60
 
 # Define MQTT subscription topics
