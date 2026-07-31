@@ -79,11 +79,11 @@ fun DashboardScreen(gatewayIp: String) {
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
 
-                    // 1. KPI Cards Row
+                    // 1. KPI Cards Row 1: Power & Climate
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 16.dp),
+                            .padding(bottom = 12.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         KpiCard(
@@ -93,16 +93,43 @@ fun DashboardScreen(gatewayIp: String) {
                             modifier = Modifier.weight(1f)
                         )
                         KpiCard(
-                            label = "Total Current",
+                            label = "Current",
                             value = String.format("%.2f A", totalCurrent),
                             color = Color(0xFFCBD5E1),
                             modifier = Modifier.weight(1f)
                         )
                         KpiCard(
-                            label = "Climate",
-                            value = String.format("%.1f°C", data.dht.temperature),
+                            label = "Temp / Hum",
+                            value = String.format("%.0f°C / %.0f%%", data.dht.temperature, data.dht.humidity),
                             color = Color(0xFFF87171),
+                            modifier = Modifier.weight(1.2f)
+                        )
+                    }
+
+                    // KPI Cards Row 2: Ambient Sensors (PIR, LDR, Supply)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        KpiCard(
+                            label = "Motion (PIR)",
+                            value = if ((data.dht.pir ?: 0) == 1) "DETECTED" else "CLEAR",
+                            color = if ((data.dht.pir ?: 0) == 1) Color(0xFFA855F7) else Color(0xFF64748B),
                             modifier = Modifier.weight(1f)
+                        )
+                        KpiCard(
+                            label = "Light (LDR)",
+                            value = String.format("%.0f%%", data.dht.ldr ?: 0.0),
+                            color = Color(0xFFFACC15),
+                            modifier = Modifier.weight(1f)
+                        )
+                        KpiCard(
+                            label = "Source",
+                            value = data.powerSource ?: "GRID SUPPLY",
+                            color = if (data.powerSource == "SOLAR SUPPLY") Color(0xFF10B981) else Color(0xFF3B82F6),
+                            modifier = Modifier.weight(1.2f)
                         )
                     }
 

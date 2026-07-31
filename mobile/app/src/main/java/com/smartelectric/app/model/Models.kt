@@ -6,7 +6,10 @@ import com.google.gson.annotations.SerializedName
 data class SystemStatus(
     val appliances: List<Appliance>,
     @SerializedName("latest_telemetry") val latestTelemetry: Map<String, TelemetryRecord>,
-    val dht: DhtRecord
+    val dht: DhtRecord,
+    val anomalies: Map<String, Boolean>? = emptyMap(),
+    @SerializedName("auto_shedding_enabled") val autoSheddingEnabled: Boolean? = false,
+    @SerializedName("power_source") val powerSource: String? = "GRID SUPPLY"
 )
 
 data class Appliance(
@@ -27,6 +30,8 @@ data class TelemetryRecord(
 data class DhtRecord(
     val temperature: Double,
     val humidity: Double,
+    val pir: Int? = 0,
+    val ldr: Double? = 0.0,
     val timestamp: String?
 )
 
