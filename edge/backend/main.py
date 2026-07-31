@@ -42,7 +42,13 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FRONTEND_FILE_PATH = os.path.join(os.path.dirname(BASE_DIR), "frontend_static", "index.html")
 
 # Import DB configurations
-from edge_db import get_db_connection, DB_PATH
+from edge_db import get_db_connection, DB_PATH, init_db
+
+# Ensure SQLite schema and seed data are initialized
+try:
+    init_db()
+except Exception as e:
+    print(f"Warning: Database auto-init error: {e}", file=sys.stderr)
 
 # FastAPI App Setup
 app = FastAPI(
