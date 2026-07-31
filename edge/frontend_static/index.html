@@ -1710,8 +1710,12 @@
         let aiSimulatedWatts = 250.0;
         let lastToggleTime = {}; // Cooldown tracking (appliance -> timestamp)
 
-        // Automatically resolve API Base URL (Uses window.location.origin if served by main.py)
-        const defaultApiBase = window.location.origin && window.location.origin !== 'null' ? window.location.origin : 'http://localhost:8000';
+        // Automatically resolve API Base URL (Routes port 8001 static server to port 8000 API Gateway)
+        let defaultApiBase = window.location.origin && window.location.origin !== 'null' ? window.location.origin : 'http://localhost:8000';
+        if (window.location.port === '8001') {
+            defaultApiBase = `http://${window.location.hostname}:8000`;
+        }
+        
         const apiInputEl = document.getElementById('api-endpoint');
         if (apiInputEl) apiInputEl.value = defaultApiBase;
 
@@ -1719,6 +1723,9 @@
             const apiInputEl = document.getElementById('api-endpoint');
             let val = apiInputEl ? apiInputEl.value.trim() : '';
             if (!val) {
+                if (window.location.port === '8001') {
+                    return `http://${window.location.hostname}:8000`;
+                }
                 return window.location.origin || 'http://localhost:8000';
             }
             if (!val.startsWith('http://') && !val.startsWith('https://')) {
