@@ -31,7 +31,7 @@ if [ -f "$REQ_FILE" ]; then
     pip install -r "$REQ_FILE"
 else
     echo "Warning: requirements.txt not found at $REQ_FILE. Installing standard packages..."
-    pip install fastapi uvicorn sqlalchemy paho-mqtt streamlit pandas plotly requests
+    pip install fastapi uvicorn sqlalchemy paho-mqtt requests
 fi
 
 # Install PyTorch for Machine Learning forecasting features
