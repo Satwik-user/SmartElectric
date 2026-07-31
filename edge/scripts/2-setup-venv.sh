@@ -10,15 +10,15 @@ echo "=== SmartElectric: Setting up Python Virtual Environment ==="
 cd "$(dirname "$0")/../backend"
 
 # Create virtual environment if it doesn't exist
-if [ ! -d ".venv" ]; then
-    echo "Creating Python virtual environment (.venv)..."
-    python3 -m venv .venv
+if [ ! -d "venv" ]; then
+    echo "Creating Python virtual environment (venv)..."
+    python3 -m venv venv
 else
     echo "Virtual environment already exists."
 fi
 
 # Activate virtual environment
-source .venv/bin/activate
+source venv/bin/activate
 
 # Upgrade pip
 echo "Upgrading pip..."
@@ -40,4 +40,4 @@ echo "Installing PyTorch (CPU-only) for forecasting features..."
 pip install torch --extra-index-url https://download.pytorch.org/whl/cpu
 
 echo "=== Python virtual environment setup complete! ==="
-echo "To activate manually, run: source edge/backend/.venv/bin/activate"
+echo "To activate manually, run: source edge/backend/venv/bin/activate"

@@ -9,7 +9,7 @@ User=jetson
 WorkingDirectory=/home/jetson/smartelectric/edge/backend
 Environment=PYTHONUNBUFFERED=1
 # Executing uvicorn from absolute path or using python module execution
-ExecStart=/home/jetson/smartelectric/edge/backend/.venv/bin/python -m uvicorn main:app --host 127.0.0.1 --port 8000
+ExecStart=/home/jetson/smartelectric/edge/backend/venv/bin/python -m uvicorn main:app --host 127.0.0.1 --port 8000
 Restart=always
 RestartSec=5
 StandardOutput=journal
