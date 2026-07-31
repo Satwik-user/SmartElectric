@@ -2,6 +2,7 @@ services:
   - type: web
     name: smartelectric-hub
     env: python
+<<<<<<< HEAD
     buildCommand: pip install -r edge/backend/requirements.txt
     startCommand: python -m uvicorn edge.backend.main:app --host 0.0.0.0 --port $PORT
     envVars:
@@ -13,5 +14,20 @@ services:
         value: SmartElectric
       - key: MQTT_PASS
         value: rassp123#
+=======
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m uvicorn edge.backend.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHONPATH
+        value: edge/backend
+      - key: MQTT_BROKER
+        value: 265aefae9e544fb5bddce420a89fb4b3.s1.eu.hivemq.cloud
+      - key: MQTT_PORT
+        value: "8883"
+      - key: MQTT_USER
+        value: SmartElectric
+      - key: MQTT_PASS
+        value: "rassp123#"
+>>>>>>> 65dc572 (feat(deploy): Add clean production requirements.txt and Render deployment config)
       - key: MQTT_USE_TLS
         value: "true"
