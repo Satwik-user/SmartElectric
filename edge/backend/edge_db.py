@@ -2,22 +2,18 @@ import sqlite3
 import os
 import sys
 
-# absolute database path (consistent across worker, backend API, and dashboard)
-DB_PATH = "/home/jetson/smartelectric/edge/backend/edge_iot.db"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.getenv("EDGE_DB_PATH", os.path.join(BASE_DIR, "edge_iot.db"))
 
 def get_db_connection():
     """Establishes and returns a connection to the SQLite database."""
     global DB_PATH
-    # Ensure directory exists before connecting
     db_dir = os.path.dirname(DB_PATH)
     if db_dir and not os.path.exists(db_dir):
         try:
             os.makedirs(db_dir, exist_ok=True)
         except Exception as e:
-            # Fallback to local directory if permission denied on Jetson path during development/testing
-            print(f"Warning: Could not create directory {db_dir} ({e}). Falling back to local directory.", file=sys.stderr)
-            fallback_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "edge_iot.db")
-            DB_PATH = fallback_path
+            DB_PATH = os.path.join(BASE_DIR, "edge_iot.db")
 
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
